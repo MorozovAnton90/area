@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Smartway — Найм в Премиум Поддержку</title>
+  <meta name="description" content="Присоединяйся к премиум‑поддержке Smartway: роли Специалиста и Руководителя группы. Москва, Нижний Новгород, Пенза. Сильная команда, высокий стандарт сервиса." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root{
+      --c-dark:#3A3A3A; /* базовый графит */
+      --c-accent:#D44333; /* акцент (кнопки/метки) */
+      --c-bg:#F2F2F2; /* светлый фон */
+      --c-muted:#B8B3AF; /* вспомогательный текст/бордеры */
+      --c-cold:#B9C4D7; /* холодный серо‑голубой для карточек/плашек */
+    }
+    html,body{height:100%}
+    body{font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,"Apple Color Emoji","Segoe UI Emoji"; color:var(--c-dark); background:linear-gradient(120deg,#F7F7F7 0%, var(--c-bg) 40%, #ECEFF3 100%);} 
+    .glass{backdrop-filter:saturate(1.2) blur(8px); background:rgba(255,255,255,0.7);} 
+    .card{background:#fff; border:1px solid rgba(0,0,0,.06); box-shadow:0 6px 24px rgba(0,0,0,.06);}
+    .pill{border:1px solid rgba(0,0,0,.06); background:linear-gradient(180deg,#fff,#F8F8F8)}
+    .accent-underline{position:relative}
+    .accent-underline::after{content:""; position:absolute; left:0; bottom:-6px; width:56px; height:4px; background:var(--c-accent); border-radius:999px}
+    .check svg{flex:0 0 auto}
+    .badge{background:var(--c-cold); color:#1a1f2e; border-radius:999px; font-weight:600}
+    .lead{color:#1f2937}
+    .muted{color:#6b7280}
+    .gradient-hero{background:radial-gradient(1000px 600px at 10% -10%, rgba(180,198,216,0.35), rgba(212,67,51,0.08) 40%, rgba(0,0,0,0) 60%),
+                             radial-gradient(1200px 600px at 110% 10%, rgba(212,67,51,0.10), rgba(0,0,0,0) 55%);} 
+    .timeline:before{content:""; position:absolute; left:18px; top:0; bottom:0; width:2px; background:linear-gradient(180deg,var(--c-accent),transparent)}
+    .kpi{background:linear-gradient(180deg,#fff,#F7F7F9); border:1px dashed rgba(0,0,0,.08)}
+    .cta-shadow{box-shadow:0 10px 30px rgba(212,67,51,.35)}
+    .link{color:var(--c-accent)}
+    .link:hover{text-decoration:underline}
+  </style>
+</head>
+<body>
+  <!-- Sticky top bar -->
+  <div class="fixed top-0 inset-x-0 z-40">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6">
+      <div class="mt-4 mb-3 flex items-center justify-between rounded-2xl glass px-4 py-2">
+        <a href="#top" class="flex items-center gap-3">
+          <span class="inline-flex h-9 w-9 items-center justify-center rounded-xl" style="background:var(--c-accent)">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M4 7h16M4 12h12M4 17h8" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>
+          </span>
+          <div>
+            <div class="text-sm font-semibold tracking-wide uppercase" style="color:var(--c-dark)">Smartway</div>
+            <div class="text-xs muted">Премиум поддержка — найм</div>
+          </div>
+        </a>
+        <a href="https://forms.gle/cDbGyDcJUyr79xXR7" target="_blank" rel="noopener" class="hidden sm:inline-flex items-center gap-2 rounded-xl px-4 py-2 text-white cta-shadow" style="background:var(--c-accent)">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 5l7 7-7 7" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Откликнуться
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Hero -->
+  <header id="top" class="pt-28 pb-14 gradient-hero">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6">
+      <div class="grid md:grid-cols-12 gap-8 items-center">
+        <div class="md:col-span-7">
+          <h1 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold leading-tight accent-underline">Премиум поддержка Smartway: ищем сильных специалистов и лидеров</h1>
+          <p class="mt-5 lead text-base sm:text-lg">Если хочешь поучаствовать в создании нового отдела, хочешь менять процессы вокруг себя и растить свои скиллы — будем рады знакомству.</p>
+          <div class="mt-6 flex flex-wrap items-center gap-3">
+            <span class="badge px-3 py-1 text-xs">Локации: Москва · Нижний Новгород · Пенза</span>
+            <span class="badge px-3 py-1 text-xs">Направления: Авиа/ЖД · Отели · Трансферы</span>
+            <span class="badge px-3 py-1 text-xs">График: 5/2</span>
+          </div>
+          <div class="mt-8 flex flex-col sm:flex-row gap-3">
+            <a class="inline-flex items-center justify-center rounded-xl px-5 py-3 text-white text-sm font-semibold cta-shadow" style="background:var(--c-accent)" target="_blank" rel="noopener" href="https://forms.gle/cDbGyDcJUyr79xXR7">Откликнуться сейчас</a>
+            <a class="inline-flex items-center justify-center rounded-xl px-5 py-3 text-sm font-semibold" style="background:#fff; border:1px solid rgba(0,0,0,.08)" href="#roles">Посмотреть роли</a>
+          </div>
+          <p class="mt-3 text-xs muted">Сбор заявок до <strong>07.11, 18:00</strong> (по Москве).</p>
+        </div>
+        <div class="md:col-span-5">
+          <div class="card rounded-3xl p-6">
+            <div class="text-sm font-semibold">Почему Премиум Smartway</div>
+            <ul class="mt-4 space-y-3 text-sm">
+              <li class="flex gap-3 check"><svg width="20" height="20" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span><strong>Влияние на процессы:</strong> ты сможешь внедрять улучшения и прокачивать устоявшиеся процессы ради пользы клиента.</span></li>
+              <li class="flex gap-3 check"><svg width="20" height="20" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span><strong>Свобода в коммуникации:</strong> естественный, уважительный тон без канцеляризмов, фокус на живом диалоге.</span></li>
+              <li class="flex gap-3 check"><svg width="20" height="20" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span><strong>Карьерный трек:</strong> новый отдел = новые роли и зоны ответственности. Есть пространство для профессионального роста.</span></li>
+            </ul>
+            <div class="mt-5 text-xs muted">Проверяем метрики за период: <strong>август—октябрь 2025</strong>.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- KPI band -->
+  <section class="py-6">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6">
+      <div class="grid sm:grid-cols-3 gap-4">
+        <div class="kpi rounded-2xl p-4">
+          <div class="text-xs muted">Качество</div>
+          <div class="mt-1 text-2xl font-extrabold">≥ 87% <span class="text-sm font-semibold">(2 из 3 мес)</span></div>
+          <div class="text-xs muted">для роли Специалиста</div>
+        </div>
+        <div class="kpi rounded-2xl p-4">
+          <div class="text-xs muted">Эффективность</div>
+          <div class="mt-1 text-2xl font-extrabold">≥ 100% <span class="text-sm font-semibold">(2 из 3 мес)</span></div>
+          <div class="text-xs muted">для роли Специалиста</div>
+        </div>
+        <div class="kpi rounded-2xl p-4">
+          <div class="text-xs muted">Жалобы</div>
+          <div class="mt-1 text-2xl font-extrabold">нет жалоб <span class="text-sm font-semibold">≥ 1 из 3 мес</span></div>
+          <div class="text-xs muted">для роли Специалиста</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Roles -->
+  <section id="roles" class="py-12">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6">
+      <h2 class="text-2xl sm:text-3xl font-bold accent-underline">Открытые роли</h2>
+      <div class="mt-8 grid lg:grid-cols-2 gap-6">
+        <!-- Specialist -->
+        <article class="card rounded-3xl p-6">
+          <div class="flex items-start justify-between gap-6">
+            <div>
+              <h3 class="text-xl font-semibold">Специалист (Авиа/ЖД · Отели · Трансферы)</h3>
+              <p class="mt-1 text-sm muted">Локации: Москва, Нижний Новгород, Пенза · График 5/2</p>
+            </div>
+            <span class="hidden sm:inline-flex px-3 py-1 badge text-xs">1+ год опыта</span>
+          </div>
+
+          <div class="mt-5">
+            <h4 class="text-sm font-semibold">Обязательные условия</h4>
+            <ul class="mt-2 space-y-2 text-sm">
+              <li class="flex gap-3 check"><svg width="18" height="18" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2"/></svg><span>Опыт по направлению ≥ 1 год. Грейд: Специалист / Специалист‑эксперт.</span></li>
+              <li class="flex gap-3 check"><svg width="18" height="18" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2"/></svg><span>Качество диалогов: из 3 последних месяцев <strong>минимум 2 ≥ 87%</strong>.</span></li>
+              <li class="flex gap-3 check"><svg width="18" height="18" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2"/></svg><span><strong>Эффективность:</strong> из 3 последних месяцев <strong>минимум 2 ≥ 100%</strong>.</span></li>
+              <li class="flex gap-3 check"><svg width="18" height="18" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2"/></svg><span><strong>Жалобы:</strong> нет жалоб хотя бы <strong>в 1 из 3</strong> месяцев.</span></li>
+            </ul>
+          </div>
+
+          <div class="mt-5">
+            <h4 class="text-sm font-semibold">Желательные навыки</h4>
+            <ul class="mt-2 grid sm:grid-cols-2 gap-y-2 gap-x-6 text-sm">
+              <li class="flex gap-2">• Экспертиза в своём направлении</li>
+              <li class="flex gap-2">• Навык структурирования информации</li>
+              <li class="flex gap-2">• Внимательность к деталям</li>
+              <li class="flex gap-2">• Эмпатия и клиентоцентричность</li>
+              <li class="flex gap-2">• Эффективная коммуникация</li>
+              <li class="flex gap-2">• Желание развиваться</li>
+            </ul>
+          </div>
+
+          <div class="mt-6 flex flex-wrap gap-3">
+            <a class="inline-flex items-center justify-center rounded-xl px-4 py-2 text-white text-sm font-semibold" style="background:var(--c-accent)" target="_blank" rel="noopener" href="https://forms.gle/cDbGyDcJUyr79xXR7">Откликнуться</a>
+            <span class="text-xs muted">Период проверки метрик: август—октябрь 2025</span>
+          </div>
+        </article>
+
+        <!-- Team Lead -->
+        <article class="card rounded-3xl p-6">
+          <div class="flex items-start justify-between gap-6">
+            <div>
+              <h3 class="text-xl font-semibold">Руководитель группы (Авиа/ЖД · Отели)</h3>
+              <p class="mt-1 text-sm muted">Локации: Москва, Нижний Новгород, Пенза · График 5/2</p>
+            </div>
+            <span class="hidden sm:inline-flex px-3 py-1 badge text-xs">1+ год опыта</span>
+          </div>
+
+          <div class="mt-5">
+            <h4 class="text-sm font-semibold">Обязательные требования</h4>
+            <ul class="mt-2 space-y-2 text-sm">
+              <li class="flex gap-3 check"><svg width="18" height="18" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2"/></svg><span>Опыт по направлению ≥ 1 год. Грейд: Руководитель группы.</span></li>
+              <li class="flex gap-3 check"><svg width="18" height="18" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2"/></svg><span>Качество диалогов команды: из 3 последних месяцев <strong>минимум 2 ≥ 85%</strong>.</span></li>
+              <li class="flex gap-3 check"><svg width="18" height="18" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2"/></svg><span><strong>Эффективность команды:</strong> из 3 последних месяцев <strong>минимум 2 ≥ 71%</strong>.</span></li>
+              <li class="flex gap-3 check"><svg width="18" height="18" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2"/></svg><span><strong>Жалобы:</strong> доля жалоб к чатам за последние 3 месяца <strong>≤ 0,15%</strong>.</span></li>
+            </ul>
+          </div>
+
+          <div class="mt-5">
+            <h4 class="text-sm font-semibold">Желательные навыки</h4>
+            <ul class="mt-2 grid sm:grid-cols-2 gap-y-2 gap-x-6 text-sm">
+              <li class="flex gap-2">• Глубокая экспертиза в сервисе и своём направлении</li>
+              <li class="flex gap-2">• Аналитика и решения по метрикам</li>
+              <li class="flex gap-2">• Управление качеством</li>
+              <li class="flex gap-2">• Клиентоцентричность как ценность команды</li>
+              <li class="flex gap-2">• Проактивность и инициативность</li>
+              <li class="flex gap-2">• Наставничество и развитие людей</li>
+            </ul>
+          </div>
+
+          <div class="mt-6 flex flex-wrap gap-3">
+            <a class="inline-flex items-center justify-center rounded-xl px-4 py-2 text-white text-sm font-semibold" style="background:var(--c-accent)" target="_blank" rel="noopener" href="https://forms.gle/cDbGyDcJUyr79xXR7">Откликнуться</a>
+            <span class="text-xs muted">Период проверки метрик: август—октябрь 2025</span>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- Process -->
+  <section id="process" class="py-12">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6">
+      <h2 class="text-2xl sm:text-3xl font-bold accent-underline">Как проходит отбор</h2>
+      <div class="mt-8 relative timeline">
+        <ol class="space-y-6">
+          <li class="relative pl-12">
+            <span class="absolute left-0 top-0 h-9 w-9 rounded-full flex items-center justify-center" style="background:var(--c-cold)"><span class="font-bold">1</span></span>
+            <div class="card rounded-2xl p-5">
+              <h3 class="font-semibold">Сбор откликов и проверка соответствия</h3>
+              <p class="mt-1 text-sm muted">Смотрим обязательные требования и метрики за <strong>август—октябрь</strong>.</p>
+            </div>
+          </li>
+          <li class="relative pl-12">
+            <span class="absolute left-0 top-0 h-9 w-9 rounded-full flex items-center justify-center" style="background:var(--c-cold)"><span class="font-bold">2</span></span>
+            <div class="card rounded-2xl p-5">
+              <h3 class="font-semibold">Встреча с руководителем премиум‑поддержки</h3>
+              <p class="mt-1 text-sm muted">Презентация отдела, ответы на вопросы, согласование ожиданий.</p>
+            </div>
+          </li>
+          <li class="relative pl-12">
+            <span class="absolute left-0 top-0 h-9 w-9 rounded-full flex items-center justify-center" style="background:var(--c-cold)"><span class="font-bold">3</span></span>
+            <div class="card rounded-2xl p-5">
+              <h3 class="font-semibold">Тестовое задание</h3>
+              <p class="mt-1 text-sm muted">Короткое и практичное — проверяет мышление, логику действий и коммуникацию.</p>
+            </div>
+          </li>
+          <li class="relative pl-12">
+            <span class="absolute left-0 top-0 h-9 w-9 rounded-full flex items-center justify-center" style="background:var(--c-cold)"><span class="font-bold">4</span></span>
+            <div class="card rounded-2xl p-5">
+              <h3 class="font-semibold">Кейс‑интервью</h3>
+              <p class="mt-1 text-sm muted">Разбор реальных ситуаций и принятие решений «в полях».</p>
+            </div>
+          </li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <!-- Notice -->
+  <section class="py-8">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6">
+      <div class="rounded-3xl p-6" style="background:#fff; border:1px solid rgba(0,0,0,.08)">
+        <div class="flex items-start gap-4">
+          <svg class="flex-shrink-0" width="28" height="28" viewBox="0 0 24 24" fill="none"><path d="M12 9v4m0 4h.01M12 2l10 19H2L12 2z" stroke="var(--c-accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <div>
+            <h3 class="font-semibold">Важно</h3>
+            <p class="mt-1 text-sm">Перед подачей заявки обязательно сообщи своему непосредственному руководителю о намерении участвовать в конкурсе.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="py-12">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6">
+      <div class="rounded-3xl p-8 text-center" style="background:linear-gradient(180deg,#fff, #F5F6F8)">
+        <h2 class="text-2xl sm:text-3xl font-bold">Готов(а) присоединиться?</h2>
+        <p class="mt-2 text-sm">Принимаем заявки до <strong>07 ноября, 18:00 (Мск)</strong>. Чем раньше отклик — тем быстрее обратная связь.</p>
+        <div class="mt-6">
+          <a class="inline-flex items-center justify-center rounded-2xl px-6 py-3 text-white text-sm sm:text-base font-semibold cta-shadow" style="background:var(--c-accent)" target="_blank" rel="noopener" href="https://forms.gle/cDbGyDcJUyr79xXR7">Откликнуться</a>
+        </div>
+        <p class="mt-3 text-xs muted">Сохрани ссылку и поделись с коллегой, которому это подойдёт.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="pb-10">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6">
+      <div class="flex flex-col sm:flex-row items-center justify-between gap-3 text-xs muted">
+        <div>© 2025 Smartway. Премиум поддержка · Найм</div>
+        <div class="flex items-center gap-3">
+          <a class="link" href="#roles">Роли</a>
+          <span class="opacity-30">•</span>
+          <a class="link" href="#process">Процесс</a>
+          <span class="opacity-30">•</span>
+          <a class="link" href="#top">Вверх</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>
