@@ -133,7 +133,7 @@
             <h4 class="text-sm font-semibold">Обязательные условия</h4>
             <ul class="mt-2 space-y-2 text-sm">
               <li class="flex gap-3 check"><svg width="18" height="18" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2"/></svg><span>Опыт по направлению ≥ 1 год. Грейд: Специалист / Специалист‑эксперт.</span></li>
-              <li class="flex gap-3 check"><svg width="18" height="18" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2"/></svg><span>Качество диалогов: из 3 последних месяцев <strong>минимум 2 ≥ 87%</strong>.</span></li>
+              <li class="flex gap-3 check"><svg width="18" height="18" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2"/></svg><span>Качество чатов: из 3 последних месяцев <strong>минимум 2 ≥ 87%</strong>.</span></li>
               <li class="flex gap-3 check"><svg width="18" height="18" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2"/></svg><span><strong>Эффективность:</strong> из 3 последних месяцев <strong>минимум 2 ≥ 100%</strong>.</span></li>
               <li class="flex gap-3 check"><svg width="18" height="18" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2"/></svg><span><strong>Жалобы:</strong> нет жалоб хотя бы <strong>в 1 из 3</strong> месяцев.</span></li>
             </ul>
@@ -171,7 +171,7 @@
             <h4 class="text-sm font-semibold">Обязательные требования</h4>
             <ul class="mt-2 space-y-2 text-sm">
               <li class="flex gap-3 check"><svg width="18" height="18" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2"/></svg><span>Опыт по направлению ≥ 1 год. Грейд: Руководитель группы.</span></li>
-              <li class="flex gap-3 check"><svg width="18" height="18" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2"/></svg><span>Качество диалогов команды: из 3 последних месяцев <strong>минимум 2 ≥ 85%</strong>.</span></li>
+              <li class="flex gap-3 check"><svg width="18" height="18" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2"/></svg><span>Качество чатов команды: из 3 последних месяцев <strong>минимум 2 ≥ 85%</strong>.</span></li>
               <li class="flex gap-3 check"><svg width="18" height="18" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2"/></svg><span><strong>Эффективность команды:</strong> из 3 последних месяцев <strong>минимум 2 ≥ 71%</strong>.</span></li>
               <li class="flex gap-3 check"><svg width="18" height="18" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2"/></svg><span><strong>Жалобы:</strong> доля жалоб к чатам за последние 3 месяца <strong>≤ 0,15%</strong>.</span></li>
             </ul>
@@ -180,13 +180,18 @@
           <div class="mt-5">
             <h4 class="text-sm font-semibold">Желательные навыки</h4>
             <ul class="mt-2 grid sm:grid-cols-2 gap-y-2 gap-x-6 text-sm">
-              <li class="flex gap-2">• Глубокая экспертиза в сервисе и своём направлении</li>
-              <li class="flex gap-2">• Аналитика и решения по метрикам</li>
-              <li class="flex gap-2">• Управление качеством</li>
-              <li class="flex gap-2">• Клиентоцентричность как ценность команды</li>
-              <li class="flex gap-2">• Проактивность и инициативность</li>
-              <li class="flex gap-2">• Наставничество и развитие людей</li>
+              <li class="flex gap-2">• Управление результатом</li>
+              <li class="flex gap-2">• Построение успешной команды</li>
+              <li class="flex gap-2">• Лидерство</li>
+              <li class="flex gap-2">• Управление процессами</li>
+              <li class="flex gap-2">• Управление изменениями</li>
             </ul>
+          </div>
+
+          <div class="mt-6 flex flex-wrap gap-3">
+            <a class="inline-flex items-center justify-center rounded-xl px-4 py-2 text-white text-sm font-semibold" style="background:var(--c-accent)" target="_blank" rel="noopener" href="https://forms.gle/cDbGyDcJUyr79xXR7">Откликнуться</a>
+            <span class="text-xs muted">Период проверки метрик: <strong>Июль — Сентябрь 2025</strong></span>
+          </div>
           </div>
 
           <div class="mt-6 flex flex-wrap gap-3">
@@ -202,7 +207,15 @@
   <section id="process" class="py-12">
     <div class="mx-auto max-w-7xl px-4 sm:px-6">
       <h2 class="text-2xl sm:text-3xl font-bold accent-underline">Как проходит отбор</h2>
-      <div class="mt-8 relative timeline">
+
+      <!-- Tabs -->
+      <div class="mt-6 inline-flex rounded-xl border border-black/10 overflow-hidden">
+        <button id="tab-spec" class="px-4 py-2 text-sm font-semibold bg-white" aria-selected="true">Специалист</button>
+        <button id="tab-tl" class="px-4 py-2 text-sm font-semibold bg-gray-100">Руководитель группы</button>
+      </div>
+
+      <!-- Specialist flow -->
+      <div id="flow-spec" class="mt-8 relative timeline">
         <ol class="space-y-6">
           <li class="relative pl-12">
             <span class="absolute left-0 top-0 h-9 w-9 rounded-full flex items-center justify-center" style="background:var(--c-cold)"><span class="font-bold">1</span></span>
@@ -215,7 +228,7 @@
             <span class="absolute left-0 top-0 h-9 w-9 rounded-full flex items-center justify-center" style="background:var(--c-cold)"><span class="font-bold">2</span></span>
             <div class="card rounded-2xl p-5">
               <h3 class="font-semibold">Встреча с руководителем премиум‑поддержки</h3>
-              <p class="mt-1 text-sm muted">Презентация отдела, ответы на вопросы, согласование ожиданий.</p>
+              <p class="mt-1 text-sm muted">Презентация отдела, ответы на вопросы.</p>
             </div>
           </li>
           <li class="relative pl-12">
@@ -229,11 +242,65 @@
             <span class="absolute left-0 top-0 h-9 w-9 rounded-full flex items-center justify-center" style="background:var(--c-cold)"><span class="font-bold">4</span></span>
             <div class="card rounded-2xl p-5">
               <h3 class="font-semibold">Кейс‑интервью</h3>
-              <p class="mt-1 text-sm muted">Разбор реальных ситуаций и принятие решений «в полях».</p>
+              <p class="mt-1 text-sm muted">Разбор реальных ситуаций и решений.</p>
             </div>
           </li>
         </ol>
       </div>
+
+      <!-- Team Lead flow -->
+      <div id="flow-tl" class="mt-8 relative timeline hidden">
+        <ol class="space-y-6">
+          <li class="relative pl-12">
+            <span class="absolute left-0 top-0 h-9 w-9 rounded-full flex items-center justify-center" style="background:var(--c-cold)"><span class="font-bold">1</span></span>
+            <div class="card rounded-2xl p-5">
+              <h3 class="font-semibold">Сбор откликов и проверка соответствия</h3>
+              <p class="mt-1 text-sm muted">Смотрим обязательные требования и метрики за <strong>Июль — Сентябрь</strong>.</p>
+            </div>
+          </li>
+          <li class="relative pl-12">
+            <span class="absolute left-0 top-0 h-9 w-9 rounded-full flex items-center justify-center" style="background:var(--c-cold)"><span class="font-bold">2</span></span>
+            <div class="card rounded-2xl p-5">
+              <h3 class="font-semibold">Встреча с руководителем премиум‑поддержки</h3>
+              <p class="mt-1 text-sm muted">Презентация отдела, ответы на вопросы.</p>
+            </div>
+          </li>
+          <li class="relative pl-12">
+            <span class="absolute left-0 top-0 h-9 w-9 rounded-full flex items-center justify-center" style="background:var(--c-cold)"><span class="font-bold">3</span></span>
+            <div class="card rounded-2xl p-5">
+              <h3 class="font-semibold">Тестовое задание</h3>
+              <p class="mt-1 text-sm muted">Короткое практическое задание (фокус на управленческом мышлении).</p>
+            </div>
+          </li>
+          <li class="relative pl-12">
+            <span class="absolute left-0 top-0 h-9 w-9 rounded-full flex items-center justify-center" style="background:var(--c-cold)"><span class="font-bold">4</span></span>
+            <div class="card rounded-2xl p-5">
+              <h3 class="font-semibold">Ассессмент‑центр</h3>
+              <p class="mt-1 text-sm muted">Оценка управленческих компетенций: управление результатом, команда, лидерство, процессы, изменения.</p>
+            </div>
+          </li>
+        </ol>
+      </div>
+
+      <script>
+        const tabSpec = document.getElementById('tab-spec');
+        const tabTl = document.getElementById('tab-tl');
+        const flowSpec = document.getElementById('flow-spec');
+        const flowTl = document.getElementById('flow-tl');
+        function activate(isSpec){
+          if(isSpec){
+            tabSpec.classList.remove('bg-gray-100'); tabSpec.classList.add('bg-white'); tabSpec.setAttribute('aria-selected','true');
+            tabTl.classList.add('bg-gray-100'); tabTl.classList.remove('bg-white'); tabTl.setAttribute('aria-selected','false');
+            flowSpec.classList.remove('hidden'); flowTl.classList.add('hidden');
+          } else {
+            tabTl.classList.remove('bg-gray-100'); tabTl.classList.add('bg-white'); tabTl.setAttribute('aria-selected','true');
+            tabSpec.classList.add('bg-gray-100'); tabSpec.classList.remove('bg-white'); tabSpec.setAttribute('aria-selected','false');
+            flowTl.classList.remove('hidden'); flowSpec.classList.add('hidden');
+          }
+        }
+        tabSpec.addEventListener('click', ()=>activate(true));
+        tabTl.addEventListener('click', ()=>activate(false));
+      </script>
     </div>
   </section>
 
