@@ -1,345 +1,375 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Smartway — Найм в Премиум Поддержку</title>
-  <meta name="description" content="Присоединяйся к премиум‑поддержке Smartway: роли Специалиста и Руководителя группы. Москва, Барнаул, Пенза. Сильная команда, высокий стандарт сервиса." />
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <script src="https://cdn.tailwindcss.com"></script>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Premium Support Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <style>
-    :root{
-      --c-dark:#3A3A3A; /* базовый графит */
-      --c-accent:#D44333; /* акцент */
-      --c-bg:#F2F2F2; /* светлый фон */
-      --c-muted:#B8B3AF; /* текст/бордеры */
-      --c-cold:#B9C4D7; /* плашки */
-    }
-    html,body{height:100%}
-    body{font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,"Apple Color Emoji","Segoe UI Emoji"; color:var(--c-dark); background:linear-gradient(120deg,#F7F7F7 0%, var(--c-bg) 40%, #ECEFF3 100%);} 
-    .glass{backdrop-filter:saturate(1.2) blur(8px); background:rgba(255,255,255,0.7);} 
-    .card{background:#fff; border:1px solid rgba(0,0,0,.06); box-shadow:0 6px 24px rgba(0,0,0,.06);} 
-    .accent-underline{position:relative}
-    .accent-underline::after{content:""; position:absolute; left:0; bottom:-6px; width:56px; height:4px; background:var(--c-accent); border-radius:999px}
-    .check svg{flex:0 0 auto}
-    .badge{background:var(--c-cold); color:#1a1f2e; border-radius:999px; font-weight:600}
-    .lead{color:#1f2937}
-    .muted{color:#6b7280}
-    .gradient-hero{background:radial-gradient(1000px 600px at 10% -10%, rgba(180,198,216,0.35), rgba(212,67,51,0.08) 40%, rgba(0,0,0,0) 60%),
-                             radial-gradient(1200px 600px at 110% 10%, rgba(212,67,51,0.10), rgba(0,0,0,0) 55%);} 
-    .timeline:before{content:""; position:absolute; left:18px; top:0; bottom:0; width:2px; background:linear-gradient(180deg,var(--c-accent),transparent)}
-    .kpi{background:linear-gradient(180deg,#fff,#F7F7F9); border:1px dashed rgba(0,0,0,.08)}
-    .cta-shadow{box-shadow:0 10px 30px rgba(212,67,51,.35)}
-    .link{color:var(--c-accent)}
-    .link:hover{text-decoration:underline}
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial; margin: 0; background:#fafafa; color:#111; }
+    header { padding: 16px 20px; background: #fff; border-bottom: 1px solid #e6e6e6; position: sticky; top:0; z-index:10;}
+    .wrap { padding: 18px 20px; max-width: 1200px; margin: 0 auto; }
+    .filters { display:flex; gap:12px; flex-wrap:wrap; align-items:end; }
+    label { font-size:12px; color:#555; display:block; margin-bottom:6px; }
+    select { padding:10px 12px; border:1px solid #dcdcdc; border-radius:10px; background:#fff; min-width: 220px; }
+    .grid { display:grid; grid-template-columns: repeat(12, 1fr); gap: 12px; margin-top: 14px; }
+    .card { background:#fff; border:1px solid #e6e6e6; border-radius:14px; padding:14px; }
+    .kpi { grid-column: span 3; }
+    .kpi .v { font-size: 26px; font-weight: 700; margin-top:6px; }
+    .muted { color:#666; font-size:12px; }
+    .chart { grid-column: span 6; }
+    canvas { width:100% !important; height:320px !important; }
+    .table { grid-column: span 12; }
+    table { width:100%; border-collapse: collapse; }
+    th, td { padding:10px 8px; border-bottom:1px solid #eee; font-size: 13px; vertical-align: top;}
+    th { text-align:left; color:#444; background:#fcfcfc; position: sticky; top: 74px; }
+    a { color:#0b57d0; text-decoration:none; }
+    a:hover { text-decoration: underline; }
+    .pill { display:inline-block; padding:4px 10px; border-radius:999px; font-size:12px; border:1px solid #e6e6e6; background:#f7f7f7; }
+    .row { display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+    .small { font-size: 12px; }
+    button { font-family: inherit; }
+    .danger { background:#fff2f2; border-color:#ffd0d0; }
   </style>
 </head>
 <body>
-  <!-- Sticky top bar -->
-  <div class="fixed top-0 inset-x-0 z-40">
-    <div class="mx-auto max-w-7xl px-4 sm:px-6">
-      <div class="mt-4 mb-3 flex items-center justify-between rounded-2xl glass px-4 py-2">
-        <a href="#top" class="flex items-center gap-3">
-          <span class="inline-flex h-9 w-9 items-center justify-center rounded-xl" style="background:var(--c-accent)">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M4 7h16M4 12h12M4 17h8" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>
-          </span>
-          <div>
-            <div class="text-sm font-semibold tracking-wide uppercase" style="color:var(--c-dark)">Smartway</div>
-            <div class="text-xs muted">Премиум поддержка — найм</div>
-          </div>
-        </a>
-        <a href="https://forms.gle/cDbGyDcJUyr79xXR7" target="_blank" rel="noopener" class="hidden sm:inline-flex items-center gap-2 rounded-xl px-4 py-2 text-white cta-shadow" style="background:var(--c-accent)">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 5l7 7-7 7" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          Откликнуться
-        </a>
+<header>
+  <div class="wrap">
+    <div class="row" style="justify-content:space-between">
+      <div>
+        <div style="font-weight:700">Premium Support Dashboard</div>
+        <div class="muted">Источник: Google Sheets → DATA Prep (CSV)</div>
+      </div>
+      <div class="row small">
+        <span class="pill" id="statusPill">Загрузка…</span>
+      </div>
+    </div>
+
+    <div class="filters" style="margin-top:12px;">
+      <div>
+        <label>Folder</label>
+        <select id="fFolder"></select>
+      </div>
+      <div>
+        <label>Client company</label>
+        <select id="fCompany"></select>
+      </div>
+      <div>
+        <label>Month</label>
+        <select id="fMonth"></select>
+      </div>
+      <div>
+        <button id="btnReset" style="padding:10px 12px;border:1px solid #dcdcdc;border-radius:10px;background:#fff;cursor:pointer;">
+          Сброс
+        </button>
       </div>
     </div>
   </div>
+</header>
 
-  <!-- Hero -->
-  <header id="top" class="pt-28 pb-14 gradient-hero">
-    <div class="mx-auto max-w-7xl px-4 sm:px-6">
-      <div class="grid md:grid-cols-12 gap-8 items-center">
-        <div class="md:col-span-7">
-          <h1 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold leading-tight accent-underline">Премиум поддержка Smartway: ищем сильных специалистов и лидеров</h1>
-          <p class="mt-5 lead text-base sm:text-lg">Если хочешь поучаствовать в создании нового отдела, хочешь менять процессы вокруг себя и растить свои скиллы — будем рады знакомству.</p>
-          <div class="mt-6 flex flex-wrap items-center gap-3">
-            <span class="badge px-3 py-1 text-xs">Локации: Москва · Барнаул · Пенза</span>
-            <span class="badge px-3 py-1 text-xs">Направления: Авиа/ЖД · Отели · Трансферы</span>
-            <span class="badge px-3 py-1 text-xs">График: 5/2 · Трансферы: 2/2 или 5/2</span>
-          </div>
-          <div class="mt-8 flex flex-col sm:flex-row gap-3">
-            <a class="inline-flex items-center justify-center rounded-xl px-5 py-3 text-white text-sm font-semibold cta-shadow" style="background:var(--c-accent)" target="_blank" rel="noopener" href="https://forms.gle/cDbGyDcJUyr79xXR7">Откликнуться сейчас</a>
-            <a class="inline-flex items-center justify-center rounded-xl px-5 py-3 text-sm font-semibold" style="background:#fff; border:1px solid rgba(0,0,0,.08)" href="#roles">Посмотреть роли</a>
-          </div>
-          <p class="mt-3 text-xs muted">Сбор заявок до <strong>07.11, 18:00</strong> (по Москве).</p>
-        </div>
-        <div class="md:col-span-5">
-          <div class="card rounded-3xl p-6">
-            <div class="text-sm font-semibold">Что тебя ждёт</div>
-            <ul class="mt-4 space-y-3 text-sm">
-              <li class="flex gap-3 check"><svg width="20" height="20" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span><strong>Влияние на процессы:</strong> ты сможешь внедрять улучшения и прокачивать устоявшиеся процессы ради пользы клиента.</span></li>
-              <li class="flex gap-3 check"><svg width="20" height="20" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span><strong>Свобода в коммуникации:</strong> естественный, уважительный тон без канцеляризмов, фокус на живом диалоге.</span></li>
-              <li class="flex gap-3 check"><svg width="20" height="20" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span><strong>Карьерный трек:</strong> новый отдел = новые роли и зоны ответственности. Есть пространство для профессионального роста.</span></li>
-            </ul>
-            <div class="mt-5 text-xs muted">Проверяем метрики за период: <strong>Июль — Сентябрь 2025</strong>.</div>
-          </div>
-        </div>
+<div class="wrap">
+  <div class="grid">
+    <div class="card kpi">
+      <div class="muted">Всего обращений</div>
+      <div class="v" id="kpiTotal">—</div>
+    </div>
+    <div class="card kpi">
+      <div class="muted">% CSAT 5</div>
+      <div class="v" id="kpi5">—</div>
+    </div>
+    <div class="card kpi">
+      <div class="muted">% CSAT 1–3</div>
+      <div class="v" id="kpiNeg">—</div>
+    </div>
+    <div class="card kpi">
+      <div class="muted">% Не оценено</div>
+      <div class="v" id="kpiNo">—</div>
+    </div>
+
+    <div class="card chart">
+      <div style="font-weight:600;margin-bottom:8px;">Распределение по папкам</div>
+      <canvas id="chFolders"></canvas>
+    </div>
+    <div class="card chart">
+      <div style="font-weight:600;margin-bottom:8px;">CSAT распределение</div>
+      <canvas id="chCsat"></canvas>
+    </div>
+
+    <div class="card chart">
+      <div style="font-weight:600;margin-bottom:8px;">Обращения по месяцам</div>
+      <canvas id="chMonths"></canvas>
+    </div>
+    <div class="card chart">
+      <div style="font-weight:600;margin-bottom:8px;">Время суток</div>
+      <canvas id="chDaypart"></canvas>
+    </div>
+
+    <div class="card chart">
+      <div style="font-weight:600;margin-bottom:8px;">Темы (топ‑15)</div>
+      <canvas id="chThemes"></canvas>
+    </div>
+    <div class="card chart">
+      <div style="font-weight:600;margin-bottom:8px;">Подтемы (топ‑15)</div>
+      <canvas id="chSubthemes"></canvas>
+    </div>
+
+    <div class="card chart">
+      <div style="font-weight:600;margin-bottom:8px;">Теги (топ‑15)</div>
+      <canvas id="chTags"></canvas>
+      <div class="muted" style="margin-top:6px;">Если в одной ячейке несколько тегов — разделитель запятая.</div>
+    </div>
+
+    <div class="card table">
+      <div style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
+        <div style="font-weight:600;">Комментарии к оценкам</div>
+        <div class="muted">Показываем строки, где Comment не пустой</div>
+      </div>
+      <div style="overflow:auto; max-height: 420px; margin-top:10px;">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Link</th>
+              <th>Company</th>
+              <th>Folder</th>
+              <th>Month</th>
+              <th>CSAT</th>
+              <th>Comment</th>
+            </tr>
+          </thead>
+          <tbody id="commentsBody"></tbody>
+        </table>
       </div>
     </div>
-  </header>
+  </div>
+</div>
 
-  <!-- KPI band -->
-  <section class="py-6">
-    <div class="mx-auto max-w-7xl px-4 sm:px-6">
-      <div class="grid sm:grid-cols-3 gap-4">
-        <div class="kpi rounded-2xl p-4">
-          <div class="text-xs muted">Качество</div>
-          <div class="mt-1 text-2xl font-extrabold">≥ 87% <span class="text-sm font-semibold">(2 из 3 мес)</span></div>
-          <div class="text-xs muted">для роли Специалиста</div>
-        </div>
-        <div class="kpi rounded-2xl p-4">
-          <div class="text-xs muted">Эффективность</div>
-          <div class="mt-1 text-2xl font-extrabold">≥ 100% <span class="text-sm font-semibold">(2 из 3 мес)</span></div>
-          <div class="text-xs muted">для роли Специалиста</div>
-        </div>
-        <div class="kpi rounded-2xl p-4">
-          <div class="text-xs muted">Жалобы</div>
-          <div class="mt-1 text-2xl font-extrabold">нет жалоб <span class="text-sm font-semibold">≥ 1 из 3 мес</span></div>
-          <div class="text-xs muted">для роли Специалиста</div>
-        </div>
-      </div>
-    </div>
-  </section>
+<script>
+  const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQi21ArcQD2Cma1WXMx0lDKL6VoAoLoK-fqY-ZbT4j-fIFmOf1fL9GIxKhA5_M4hc2K-AJ6lAtloWLc/pub?output=csv&gid=960906784";
 
-  <!-- Roles -->
-  <section id="roles" class="py-12">
-    <div class="mx-auto max-w-7xl px-4 sm:px-6">
-      <div class="mt-8 grid lg:grid-cols-2 gap-6">
-        <!-- Specialist -->
-        <article class="card rounded-3xl p-6">
-          <div class="flex items-start justify-between gap-6">
-            <div>
-              <h3 class="text-xl font-semibold">Специалист (Авиа/ЖД · Отели · Трансферы)</h3>
-              <p class="mt-1 text-sm muted">Локации: Москва, Барнаул, Пенза · График: 5/2 <span class="opacity-60">(Трансферы: 2/2 или 5/2)</span></p>
-            </div>
-            <span class="hidden sm:inline-flex px-3 py-1 badge text-xs">1+ год опыта</span>
-          </div>
+  const $ = (id) => document.getElementById(id);
+  let rawRows = [];
+  let charts = {};
 
-          <div class="mt-5">
-            <h4 class="text-sm font-semibold">Обязательные условия</h4>
-            <ul class="mt-2 space-y-2 text-sm">
-              <li class="flex gap-3 check"><svg width="18" height="18" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2"/></svg><span>Опыт по направлению ≥ 1 год. Грейд: Специалист / Специалист‑эксперт.</span></li>
-              <li class="flex gap-3 check"><svg width="18" height="18" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2"/></svg><span>Качество чатов: из 3 последних месяцев <strong>минимум 2 ≥ 87%</strong>.</span></li>
-              <li class="flex gap-3 check"><svg width="18" height="18" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2"/></svg><span><strong>Эффективность:</strong> из 3 последних месяцев <strong>минимум 2 ≥ 100%</strong>.</span></li>
-              <li class="flex gap-3 check"><svg width="18" height="18" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2"/></svg><span><strong>Жалобы:</strong> нет жалоб хотя бы <strong>в 1 из 3</strong> месяцев.</span></li>
-            </ul>
-          </div>
+  function setStatus(text, danger=false) {
+    const el = $("statusPill");
+    el.textContent = text;
+    el.classList.toggle("danger", !!danger);
+  }
 
-          <div class="mt-5">
-            <h4 class="text-sm font-semibold">Желательные навыки</h4>
-            <ul class="mt-2 grid sm:grid-cols-2 gap-y-2 gap-x-6 text-sm">
-              <li class="flex gap-2">• Экспертиза в своём направлении</li>
-              <li class="flex gap-2">• Навык структурирования информации</li>
-              <li class="flex gap-2">• Внимательность к деталям</li>
-              <li class="flex gap-2">• Эмпатия и клиентоцентричность</li>
-              <li class="flex gap-2">• Эффективная коммуникация</li>
-              <li class="flex gap-2">• Желание развиваться</li>
-            </ul>
-          </div>
+  function parseCSV(text) {
+    const rows = [];
+    let cur = "", inQuotes = false;
+    const line = [];
+    const pushCell = () => { line.push(cur); cur = ""; };
+    const pushLine = () => { rows.push([...line]); line.length = 0; };
 
-          <div class="mt-6 flex flex-wrap gap-3">
-            <a class="inline-flex items-center justify-center rounded-xl px-4 py-2 text-white text-sm font-semibold" style="background:var(--c-accent)" target="_blank" rel="noopener" href="https://forms.gle/cDbGyDcJUyr79xXR7">Откликнуться</a>
-            <span class="text-xs muted">Период проверки метрик: <strong>Июль — Сентябрь 2025</strong></span>
-          </div>
-        </article>
+    for (let i = 0; i < text.length; i++) {
+      const c = text[i];
+      const n = text[i + 1];
 
-        <!-- Team Lead -->
-        <article class="card rounded-3xl p-6">
-          <div class="flex items-start justify-between gap-6">
-            <div>
-              <h3 class="text-xl font-semibold">Руководитель группы (Авиа/ЖД · Отели)</h3>
-              <p class="mt-1 text-sm muted">Локации: Москва, Барнаул, Пенза · График 5/2</p>
-            </div>
-            <span class="hidden sm:inline-flex px-3 py-1 badge text-xs">1+ год опыта</span>
-          </div>
+      if (c === '"' && inQuotes && n === '"') { cur += '"'; i++; continue; }
+      if (c === '"') { inQuotes = !inQuotes; continue; }
+      if (c === ',' && !inQuotes) { pushCell(); continue; }
+      if ((c === '\n' || c === '\r') && !inQuotes) {
+        if (c === '\r' && n === '\n') i++;
+        pushCell(); pushLine();
+        continue;
+      }
+      cur += c;
+    }
+    pushCell(); pushLine();
+    return rows.filter(r => r.some(x => (x ?? "").trim() !== ""));
+  }
 
-          <div class="mt-5">
-            <h4 class="text-sm font-semibold">Обязательные требования</h4>
-            <ul class="mt-2 space-y-2 text-sm">
-              <li class="flex gap-3 check"><svg width="18" height="18" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2"/></svg><span>Опыт по направлению ≥ 1 год. Грейд: Руководитель группы.</span></li>
-              <li class="flex gap-3 check"><svg width="18" height="18" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2"/></svg><span>Качество чатов команды: из 3 последних месяцев <strong>минимум 2 ≥ 85%</strong>.</span></li>
-              <li class="flex gap-3 check"><svg width="18" height="18" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2"/></svg><span><strong>Эффективность команды:</strong> из 3 последних месяцев <strong>минимум 2 ≥ 71%</strong>.</span></li>
-              <li class="flex gap-3 check"><svg width="18" height="18" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2"/></svg><span><strong>Жалобы:</strong> доля жалоб к чатам за последние 3 месяца <strong>≤ 0,15%</strong>.</span></li>
-            </ul>
-          </div>
+  function normalize(rows) {
+    const header = rows[0].map(h => (h || "").trim());
+    const idx = Object.fromEntries(header.map((h, i) => [h, i]));
 
-          <div class="mt-5">
-            <h4 class="text-sm font-semibold">Желательные навыки</h4>
-            <ul class="mt-2 grid sm:grid-cols-2 gap-y-2 gap-x-6 text-sm">
-              <li class="flex gap-2">• Управление результатом</li>
-              <li class="flex gap-2">• Построение успешной команды</li>
-              <li class="flex gap-2">• Лидерство</li>
-              <li class="flex gap-2">• Управление процессами</li>
-              <li class="flex gap-2">• Управление изменениями</li>
-            </ul>
-          </div>
+    const required = ["ID","Link","Theme","Subtheme","Tags","CSAT","Comment","ClientCompany","Folder","Month","Daypart"];
+    for (const r of required) if (!(r in idx)) {
+      throw new Error("В CSV не найден столбец: " + r);
+    }
 
-          <div class="mt-6 flex flex-wrap gap-3">
-            <a class="inline-flex items-center justify-center rounded-xl px-4 py-2 text-white text-sm font-semibold" style="background:var(--c-accent)" target="_blank" rel="noopener" href="https://forms.gle/cDbGyDcJUyr79xXR7">Откликнуться</a>
-            <span class="text-xs muted">Период проверки метрик: <strong>Июль — Сентябрь 2025</strong></span>
-          </div>
-        </article>
-      </div>
-    </div>
-  </section>
+    return rows.slice(1).map(r => ({
+      id: r[idx["ID"]] || "",
+      link: r[idx["Link"]] || "",
+      theme: r[idx["Theme"]] || "",
+      subtheme: r[idx["Subtheme"]] || "",
+      tags: r[idx["Tags"]] || "",
+      csat: (r[idx["CSAT"]] || "").trim() || "Не оценено",
+      comment: r[idx["Comment"]] || "",
+      company: r[idx["ClientCompany"]] || "",
+      folder: r[idx["Folder"]] || "",
+      month: r[idx["Month"]] || "",
+      daypart: r[idx["Daypart"]] || ""
+    })).filter(x => x.id !== "");
+  }
 
-  <!-- Process -->
-  <section id="process" class="py-12">
-    <div class="mx-auto max-w-7xl px-4 sm:px-6">
-      <h2 class="text-2xl sm:text-3xl font-bold accent-underline">Как проходит отбор</h2>
+  function uniq(arr) {
+    return Array.from(new Set(arr.filter(x => (x ?? "").trim() !== ""))).sort((a,b)=>a.localeCompare(b,"ru"));
+  }
 
-      <!-- Tabs -->
-      <div class="mt-6 inline-flex rounded-xl border border-black/10 overflow-hidden">
-        <button id="tab-spec" class="px-4 py-2 text-sm font-semibold bg-white" aria-selected="true">Специалист</button>
-        <button id="tab-tl" class="px-4 py-2 text-sm font-semibold bg-gray-100">Руководитель группы</button>
-      </div>
+  function fillSelect(sel, values) {
+    sel.innerHTML = "";
+    const all = document.createElement("option");
+    all.value = "Все";
+    all.textContent = "Все";
+    sel.appendChild(all);
 
-      <!-- Specialist flow -->
-      <div id="flow-spec" class="mt-8 relative timeline">
-        <ol class="space-y-6">
-          <li class="relative pl-12">
-            <span class="absolute left-0 top-0 h-9 w-9 rounded-full flex items-center justify-center" style="background:var(--c-cold)"><span class="font-bold">1</span></span>
-            <div class="card rounded-2xl p-5">
-              <h3 class="font-semibold">Сбор откликов и проверка соответствия</h3>
-              <p class="mt-1 text-sm muted">Смотрим обязательные требования и метрики за <strong>Июль — Сентябрь</strong>.</p>
-            </div>
-          </li>
-          <li class="relative pl-12">
-            <span class="absolute left-0 top-0 h-9 w-9 rounded-full flex items-center justify-center" style="background:var(--c-cold)"><span class="font-bold">2</span></span>
-            <div class="card rounded-2xl p-5">
-              <h3 class="font-semibold">Встреча с руководителем премиум‑поддержки</h3>
-              <p class="mt-1 text-sm muted">Презентация отдела, ответы на вопросы.</p>
-            </div>
-          </li>
-          <li class="relative pl-12">
-            <span class="absolute left-0 top-0 h-9 w-9 rounded-full flex items-center justify-center" style="background:var(--c-cold)"><span class="font-bold">3</span></span>
-            <div class="card rounded-2xl p-5">
-              <h3 class="font-semibold">Тестовое задание</h3>
-              <p class="mt-1 text-sm muted">Короткое и практичное — проверяет мышление, логику действий и коммуникацию.</p>
-            </div>
-          </li>
-          <li class="relative pl-12">
-            <span class="absolute left-0 top-0 h-9 w-9 rounded-full flex items-center justify-center" style="background:var(--c-cold)"><span class="font-bold">4</span></span>
-            <div class="card rounded-2xl p-5">
-              <h3 class="font-semibold">Кейс‑интервью</h3>
-              <p class="mt-1 text см muted">Разбор реальных ситуаций и решений.</p>
-            </div>
-          </li>
-        </ol>
-      </div>
+    for (const v of values) {
+      const o = document.createElement("option");
+      o.value = v; o.textContent = v;
+      sel.appendChild(o);
+    }
+    sel.value = "Все";
+  }
 
-      <!-- Team Lead flow -->
-      <div id="flow-tl" class="mt-8 relative timeline hidden">
-        <ol class="space-y-6">
-          <li class="relative pl-12">
-            <span class="absolute left-0 top-0 h-9 w-9 rounded-full flex items-center justify-center" style="background:var(--c-cold)"><span class="font-bold">1</span></span>
-            <div class="card rounded-2xl p-5">
-              <h3 class="font-semibold">Сбор откликов и проверка соответствия</h3>
-              <p class="mt-1 text-sm muted">Смотрим обязательные требования и метрики за <strong>Июль — Сентябрь</strong>.</p>
-            </div>
-          </li>
-          <li class="relative pl-12">
-            <span class="absolute left-0 top-0 h-9 w-9 rounded-full flex items-center justify-center" style="background:var(--c-cold)"><span class="font-bold">2</span></span>
-            <div class="card rounded-2xl p-5">
-              <h3 class="font-semibold">Встреча с руководителем премиум‑поддержки</h3>
-              <p class="mt-1 text-sm muted">Презентация отдела, ответы на вопросы.</p>
-            </div>
-          </li>
-          <li class="relative pl-12">
-            <span class="absolute left-0 top-0 h-9 w-9 rounded-full flex items-center justify-center" style="background:var(--c-cold)"><span class="font-bold">3</span></span>
-            <div class="card rounded-2xl p-5">
-              <h3 class="font-semibold">Тестовое задание</h3>
-              <p class="mt-1 text-sm muted">Короткое практическое задание (фокус на управленческом мышлении).</p>
-            </div>
-          </li>
-          <li class="relative pl-12">
-            <span class="absolute left-0 top-0 h-9 w-9 rounded-full flex items-center justify-center" style="background:var(--c-cold)"><span class="font-bold">4</span></span>
-            <div class="card rounded-2xl p-5">
-              <h3 class="font-semibold">Ассессмент‑центр</h3>
-              <p class="mt-1 text-sm muted">Оценка управленческих компетенций: управление результатом, команда, лидерство, процессы, изменения.</p>
-            </div>
-          </li>
-        </ol>
-      </div>
+  function applyFilters() {
+    const fFolder = $("fFolder").value;
+    const fCompany = $("fCompany").value;
+    const fMonth = $("fMonth").value;
 
-      <script>
-        const tabSpec = document.getElementById('tab-spec');
-        const tabTl = document.getElementById('tab-tl');
-        const flowSpec = document.getElementById('flow-spec');
-        const flowTl = document.getElementById('flow-tl');
-        function activate(isSpec){
-          if(isSpec){
-            tabSpec.classList.remove('bg-gray-100'); tabSpec.classList.add('bg-white'); tabSpec.setAttribute('aria-selected','true');
-            tabTl.classList.add('bg-gray-100'); tabTl.classList.remove('bg-white'); tabTl.setAttribute('aria-selected','false');
-            flowSpec.classList.remove('hidden'); flowTl.classList.add('hidden');
-          } else {
-            tabTl.classList.remove('bg-gray-100'); tabTl.classList.add('bg-white'); tabTl.setAttribute('aria-selected','true');
-            tabSpec.classList.add('bg-gray-100'); tabSpec.classList.remove('bg-white'); tabSpec.setAttribute('aria-selected','false');
-            flowTl.classList.remove('hidden'); flowSpec.classList.add('hidden');
-          }
-        }
-        tabSpec.addEventListener('click', ()=>activate(true));
-        tabTl.addEventListener('click', ()=>activate(false));
-      </script>
-    </div>
-  </section>
+    return rawRows.filter(r =>
+      (fFolder === "Все" || r.folder === fFolder) &&
+      (fCompany === "Все" || r.company === fCompany) &&
+      (fMonth === "Все" || r.month === fMonth)
+    );
+  }
 
-  <!-- Notice -->
-  <section class="py-8">
-    <div class="mx-auto max-w-7xl px-4 sm:px-6">
-      <div class="rounded-3xl p-6" style="background:#fff; border:1px solid rgba(0,0,0,.08)">
-        <div class="flex items-start gap-4">
-          <svg class="flex-shrink-0" width="28" height="28" viewBox="0 0 24 24" fill="none"><path d="M12 9v4m0 4h.01M12 2l10 19H2L12 2z" stroke="var(--c-accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          <div>
-            <h3 class="font-semibold">Важно</h3>
-            <p class="mt-1 text-sm">Перед подачей заявки обязательно сообщи своему непосредственному руководителю о намерении участвовать в конкурсе.</p>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
+  function countBy(rows, keyFn) {
+    const m = new Map();
+    for (const r of rows) {
+      const k = keyFn(r) || "—";
+      m.set(k, (m.get(k) || 0) + 1);
+    }
+    return Array.from(m.entries()).sort((a,b)=>b[1]-a[1]);
+  }
 
-  <!-- CTA -->
-  <section class="py-12">
-    <div class="mx-auto max-w-7xl px-4 sm:px-6">
-      <div class="rounded-3xl p-8 text-center" style="background:linear-gradient(180deg,#fff, #F5F6F8)">
-        <h2 class="text-2xl sm:text-3xl font-bold">Готов(а) присоединиться?</h2>
-        <p class="mt-2 text-sm">Принимаем заявки до <strong>07 ноября, 18:00 (Мск)</strong>. Чем раньше отклик — тем быстрее обратная связь.</p>
-        <div class="mt-6">
-          <a class="inline-flex items-center justify-center rounded-2xl px-6 py-3 text-white text-sm sm:text-base font-semibold cta-shadow" style="background:var(--c-accent)" target="_blank" rel="noopener" href="https://forms.gle/cDbGyDcJUyr79xXR7">Откликнуться</a>
-        </div>
-        <p class="mt-3 text-xs muted">Сохрани ссылку и поделись с коллегой, которому это подойдёт.</p>
-      </div>
-    </div>
-  </section>
+  function percent(n, d) {
+    if (!d) return "0%";
+    return (Math.round((n/d)*1000)/10).toFixed(1) + "%";
+  }
 
-  <!-- Footer -->
-  <footer class="pb-10">
-    <div class="mx-auto max-w-7xl px-4 sm:px-6">
-      <div class="flex flex-col sm:flex-row items-center justify-between gap-3 text-xs muted">
-        <div>© 2025 Smartway. Премиум поддержка · Найм</div>
-        <div class="flex items-center gap-3">
-          <a class="link" href="#roles">Роли</a>
-          <span class="opacity-30">•</span>
-          <a class="link" href="#process">Процесс</a>
-          <span class="opacity-30">•</span>
-          <a class="link" href="#top">Вверх</a>
-        </div>
-      </div>
-    </div>
-  </footer>
+  function upsertChart(id, type, labels, data) {
+    const ctx = document.getElementById(id);
+    if (charts[id]) {
+      charts[id].data.labels = labels;
+      charts[id].data.datasets[0].data = data;
+      charts[id].update();
+      return;
+    }
+    charts[id] = new Chart(ctx, {
+      type,
+      data: { labels, datasets: [{ label: "", data }] },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: type === "pie" } },
+        scales: type === "pie" ? {} : { x: { ticks: { autoSkip: false } } }
+      }
+    });
+  }
+
+  function escapeHtml(s) {
+    return (s ?? "").toString().replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+  }
+  function escapeAttr(s) { return escapeHtml(s); }
+
+  function render() {
+    const rows = applyFilters();
+    const total = rows.length;
+
+    const csat5 = rows.filter(r => r.csat === "5").length;
+    const neg = rows.filter(r => ["1","2","3"].includes(r.csat)).length;
+    const no = rows.filter(r => r.csat === "Не оценено" || r.csat === "").length;
+
+    $("kpiTotal").textContent = total.toString();
+    $("kpi5").textContent = percent(csat5, total);
+    $("kpiNeg").textContent = percent(neg, total);
+    $("kpiNo").textContent = percent(no, total);
+
+    const folders = countBy(rows, r => r.folder || "—");
+    upsertChart("chFolders", "bar", folders.map(x=>x[0]), folders.map(x=>x[1]));
+
+    const csatOrder = ["1","2","3","4","5","Не оценено"];
+    const csatMap = new Map(countBy(rows, r=>r.csat));
+    upsertChart("chCsat", "bar", csatOrder, csatOrder.map(k => csatMap.get(k) || 0));
+
+    const months = countBy(rows, r => r.month || "—").sort((a,b)=> (a[0]||"").localeCompare(b[0]||""));
+    upsertChart("chMonths", "line", months.map(x=>x[0]), months.map(x=>x[1]));
+
+    const dayOrder = ["Ночь","Утро","День","Вечер","—"];
+    const dayMap = new Map(countBy(rows, r=>r.daypart || "—"));
+    upsertChart("chDaypart", "bar", dayOrder, dayOrder.map(k => dayMap.get(k) || 0));
+
+    const themes = countBy(rows, r=>r.theme || "—").slice(0,15);
+    upsertChart("chThemes", "bar", themes.map(x=>x[0]), themes.map(x=>x[1]));
+
+    const subs = countBy(rows, r=>r.subtheme || "—").slice(0,15);
+    upsertChart("chSubthemes", "bar", subs.map(x=>x[0]), subs.map(x=>x[1]));
+
+    const tagRows = [];
+    for (const r of rows) {
+      const parts = (r.tags || "").split(",").map(x=>x.trim()).filter(Boolean);
+      if (parts.length === 0) tagRows.push({ tag: "—" });
+      else for (const t of parts) tagRows.push({ tag: t });
+    }
+    const tags = countBy(tagRows, x=>x.tag).slice(0,15);
+    upsertChart("chTags", "bar", tags.map(x=>x[0]), tags.map(x=>x[1]));
+
+    const comments = rows.filter(r => (r.comment || "").trim() !== "");
+    const tbody = $("commentsBody");
+    tbody.innerHTML = "";
+    for (const r of comments.slice(0,200)) {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${escapeHtml(r.id)}</td>
+        <td>${r.link ? `<a href="${escapeAttr(r.link)}" target="_blank">link</a>` : ""}</td>
+        <td>${escapeHtml(r.company)}</td>
+        <td>${escapeHtml(r.folder)}</td>
+        <td>${escapeHtml(r.month)}</td>
+        <td>${escapeHtml(r.csat)}</td>
+        <td>${escapeHtml(r.comment)}</td>
+      `;
+      tbody.appendChild(tr);
+    }
+
+    setStatus(`Готово · ${total} строк`);
+  }
+
+  async function init() {
+    try {
+      setStatus("Загружаю CSV…");
+      const resp = await fetch(CSV_URL, { cache: "no-store" });
+      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+      const csv = await resp.text();
+      const parsed = parseCSV(csv);
+      rawRows = normalize(parsed);
+
+      fillSelect($("fFolder"), uniq(rawRows.map(r=>r.folder)));
+      fillSelect($("fCompany"), uniq(rawRows.map(r=>r.company)));
+      fillSelect($("fMonth"), uniq(rawRows.map(r=>r.month)));
+
+      $("fFolder").addEventListener("change", render);
+      $("fCompany").addEventListener("change", render);
+      $("fMonth").addEventListener("change", render);
+      $("btnReset").addEventListener("click", () => {
+        $("fFolder").value = "Все";
+        $("fCompany").value = "Все";
+        $("fMonth").value = "Все";
+        render();
+      });
+
+      render();
+    } catch (e) {
+      console.error(e);
+      setStatus("Ошибка загрузки", true);
+      alert("Не получилось загрузить данные: " + e.message + "\n\nПроверь публикацию листа и доступность CSV.");
+    }
+  }
+
+  init();
+</script>
 </body>
 </html>
