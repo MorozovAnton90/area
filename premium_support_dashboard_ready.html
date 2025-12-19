@@ -1,0 +1,375 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Premium Support Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <style>
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial; margin: 0; background:#fafafa; color:#111; }
+    header { padding: 16px 20px; background: #fff; border-bottom: 1px solid #e6e6e6; position: sticky; top:0; z-index:10;}
+    .wrap { padding: 18px 20px; max-width: 1200px; margin: 0 auto; }
+    .filters { display:flex; gap:12px; flex-wrap:wrap; align-items:end; }
+    label { font-size:12px; color:#555; display:block; margin-bottom:6px; }
+    select { padding:10px 12px; border:1px solid #dcdcdc; border-radius:10px; background:#fff; min-width: 220px; }
+    .grid { display:grid; grid-template-columns: repeat(12, 1fr); gap: 12px; margin-top: 14px; }
+    .card { background:#fff; border:1px solid #e6e6e6; border-radius:14px; padding:14px; }
+    .kpi { grid-column: span 3; }
+    .kpi .v { font-size: 26px; font-weight: 700; margin-top:6px; }
+    .muted { color:#666; font-size:12px; }
+    .chart { grid-column: span 6; }
+    canvas { width:100% !important; height:320px !important; }
+    .table { grid-column: span 12; }
+    table { width:100%; border-collapse: collapse; }
+    th, td { padding:10px 8px; border-bottom:1px solid #eee; font-size: 13px; vertical-align: top;}
+    th { text-align:left; color:#444; background:#fcfcfc; position: sticky; top: 74px; }
+    a { color:#0b57d0; text-decoration:none; }
+    a:hover { text-decoration: underline; }
+    .pill { display:inline-block; padding:4px 10px; border-radius:999px; font-size:12px; border:1px solid #e6e6e6; background:#f7f7f7; }
+    .row { display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+    .small { font-size: 12px; }
+    button { font-family: inherit; }
+    .danger { background:#fff2f2; border-color:#ffd0d0; }
+  </style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <div class="row" style="justify-content:space-between">
+      <div>
+        <div style="font-weight:700">Premium Support Dashboard</div>
+        <div class="muted">Источник: Google Sheets → DATA Prep (CSV)</div>
+      </div>
+      <div class="row small">
+        <span class="pill" id="statusPill">Загрузка…</span>
+      </div>
+    </div>
+
+    <div class="filters" style="margin-top:12px;">
+      <div>
+        <label>Folder</label>
+        <select id="fFolder"></select>
+      </div>
+      <div>
+        <label>Client company</label>
+        <select id="fCompany"></select>
+      </div>
+      <div>
+        <label>Month</label>
+        <select id="fMonth"></select>
+      </div>
+      <div>
+        <button id="btnReset" style="padding:10px 12px;border:1px solid #dcdcdc;border-radius:10px;background:#fff;cursor:pointer;">
+          Сброс
+        </button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="grid">
+    <div class="card kpi">
+      <div class="muted">Всего обращений</div>
+      <div class="v" id="kpiTotal">—</div>
+    </div>
+    <div class="card kpi">
+      <div class="muted">% CSAT 5</div>
+      <div class="v" id="kpi5">—</div>
+    </div>
+    <div class="card kpi">
+      <div class="muted">% CSAT 1–3</div>
+      <div class="v" id="kpiNeg">—</div>
+    </div>
+    <div class="card kpi">
+      <div class="muted">% Не оценено</div>
+      <div class="v" id="kpiNo">—</div>
+    </div>
+
+    <div class="card chart">
+      <div style="font-weight:600;margin-bottom:8px;">Распределение по папкам</div>
+      <canvas id="chFolders"></canvas>
+    </div>
+    <div class="card chart">
+      <div style="font-weight:600;margin-bottom:8px;">CSAT распределение</div>
+      <canvas id="chCsat"></canvas>
+    </div>
+
+    <div class="card chart">
+      <div style="font-weight:600;margin-bottom:8px;">Обращения по месяцам</div>
+      <canvas id="chMonths"></canvas>
+    </div>
+    <div class="card chart">
+      <div style="font-weight:600;margin-bottom:8px;">Время суток</div>
+      <canvas id="chDaypart"></canvas>
+    </div>
+
+    <div class="card chart">
+      <div style="font-weight:600;margin-bottom:8px;">Темы (топ‑15)</div>
+      <canvas id="chThemes"></canvas>
+    </div>
+    <div class="card chart">
+      <div style="font-weight:600;margin-bottom:8px;">Подтемы (топ‑15)</div>
+      <canvas id="chSubthemes"></canvas>
+    </div>
+
+    <div class="card chart">
+      <div style="font-weight:600;margin-bottom:8px;">Теги (топ‑15)</div>
+      <canvas id="chTags"></canvas>
+      <div class="muted" style="margin-top:6px;">Если в одной ячейке несколько тегов — разделитель запятая.</div>
+    </div>
+
+    <div class="card table">
+      <div style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
+        <div style="font-weight:600;">Комментарии к оценкам</div>
+        <div class="muted">Показываем строки, где Comment не пустой</div>
+      </div>
+      <div style="overflow:auto; max-height: 420px; margin-top:10px;">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Link</th>
+              <th>Company</th>
+              <th>Folder</th>
+              <th>Month</th>
+              <th>CSAT</th>
+              <th>Comment</th>
+            </tr>
+          </thead>
+          <tbody id="commentsBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQi21ArcQD2Cma1WXMx0lDKL6VoAoLoK-fqY-ZbT4j-fIFmOf1fL9GIxKhA5_M4hc2K-AJ6lAtloWLc/pub?output=csv&gid=960906784";
+
+  const $ = (id) => document.getElementById(id);
+  let rawRows = [];
+  let charts = {};
+
+  function setStatus(text, danger=false) {
+    const el = $("statusPill");
+    el.textContent = text;
+    el.classList.toggle("danger", !!danger);
+  }
+
+  function parseCSV(text) {
+    const rows = [];
+    let cur = "", inQuotes = false;
+    const line = [];
+    const pushCell = () => { line.push(cur); cur = ""; };
+    const pushLine = () => { rows.push([...line]); line.length = 0; };
+
+    for (let i = 0; i < text.length; i++) {
+      const c = text[i];
+      const n = text[i + 1];
+
+      if (c === '"' && inQuotes && n === '"') { cur += '"'; i++; continue; }
+      if (c === '"') { inQuotes = !inQuotes; continue; }
+      if (c === ',' && !inQuotes) { pushCell(); continue; }
+      if ((c === '\n' || c === '\r') && !inQuotes) {
+        if (c === '\r' && n === '\n') i++;
+        pushCell(); pushLine();
+        continue;
+      }
+      cur += c;
+    }
+    pushCell(); pushLine();
+    return rows.filter(r => r.some(x => (x ?? "").trim() !== ""));
+  }
+
+  function normalize(rows) {
+    const header = rows[0].map(h => (h || "").trim());
+    const idx = Object.fromEntries(header.map((h, i) => [h, i]));
+
+    const required = ["ID","Link","Theme","Subtheme","Tags","CSAT","Comment","ClientCompany","Folder","Month","Daypart"];
+    for (const r of required) if (!(r in idx)) {
+      throw new Error("В CSV не найден столбец: " + r);
+    }
+
+    return rows.slice(1).map(r => ({
+      id: r[idx["ID"]] || "",
+      link: r[idx["Link"]] || "",
+      theme: r[idx["Theme"]] || "",
+      subtheme: r[idx["Subtheme"]] || "",
+      tags: r[idx["Tags"]] || "",
+      csat: (r[idx["CSAT"]] || "").trim() || "Не оценено",
+      comment: r[idx["Comment"]] || "",
+      company: r[idx["ClientCompany"]] || "",
+      folder: r[idx["Folder"]] || "",
+      month: r[idx["Month"]] || "",
+      daypart: r[idx["Daypart"]] || ""
+    })).filter(x => x.id !== "");
+  }
+
+  function uniq(arr) {
+    return Array.from(new Set(arr.filter(x => (x ?? "").trim() !== ""))).sort((a,b)=>a.localeCompare(b,"ru"));
+  }
+
+  function fillSelect(sel, values) {
+    sel.innerHTML = "";
+    const all = document.createElement("option");
+    all.value = "Все";
+    all.textContent = "Все";
+    sel.appendChild(all);
+
+    for (const v of values) {
+      const o = document.createElement("option");
+      o.value = v; o.textContent = v;
+      sel.appendChild(o);
+    }
+    sel.value = "Все";
+  }
+
+  function applyFilters() {
+    const fFolder = $("fFolder").value;
+    const fCompany = $("fCompany").value;
+    const fMonth = $("fMonth").value;
+
+    return rawRows.filter(r =>
+      (fFolder === "Все" || r.folder === fFolder) &&
+      (fCompany === "Все" || r.company === fCompany) &&
+      (fMonth === "Все" || r.month === fMonth)
+    );
+  }
+
+  function countBy(rows, keyFn) {
+    const m = new Map();
+    for (const r of rows) {
+      const k = keyFn(r) || "—";
+      m.set(k, (m.get(k) || 0) + 1);
+    }
+    return Array.from(m.entries()).sort((a,b)=>b[1]-a[1]);
+  }
+
+  function percent(n, d) {
+    if (!d) return "0%";
+    return (Math.round((n/d)*1000)/10).toFixed(1) + "%";
+  }
+
+  function upsertChart(id, type, labels, data) {
+    const ctx = document.getElementById(id);
+    if (charts[id]) {
+      charts[id].data.labels = labels;
+      charts[id].data.datasets[0].data = data;
+      charts[id].update();
+      return;
+    }
+    charts[id] = new Chart(ctx, {
+      type,
+      data: { labels, datasets: [{ label: "", data }] },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: type === "pie" } },
+        scales: type === "pie" ? {} : { x: { ticks: { autoSkip: false } } }
+      }
+    });
+  }
+
+  function escapeHtml(s) {
+    return (s ?? "").toString().replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+  }
+  function escapeAttr(s) { return escapeHtml(s); }
+
+  function render() {
+    const rows = applyFilters();
+    const total = rows.length;
+
+    const csat5 = rows.filter(r => r.csat === "5").length;
+    const neg = rows.filter(r => ["1","2","3"].includes(r.csat)).length;
+    const no = rows.filter(r => r.csat === "Не оценено" || r.csat === "").length;
+
+    $("kpiTotal").textContent = total.toString();
+    $("kpi5").textContent = percent(csat5, total);
+    $("kpiNeg").textContent = percent(neg, total);
+    $("kpiNo").textContent = percent(no, total);
+
+    const folders = countBy(rows, r => r.folder || "—");
+    upsertChart("chFolders", "bar", folders.map(x=>x[0]), folders.map(x=>x[1]));
+
+    const csatOrder = ["1","2","3","4","5","Не оценено"];
+    const csatMap = new Map(countBy(rows, r=>r.csat));
+    upsertChart("chCsat", "bar", csatOrder, csatOrder.map(k => csatMap.get(k) || 0));
+
+    const months = countBy(rows, r => r.month || "—").sort((a,b)=> (a[0]||"").localeCompare(b[0]||""));
+    upsertChart("chMonths", "line", months.map(x=>x[0]), months.map(x=>x[1]));
+
+    const dayOrder = ["Ночь","Утро","День","Вечер","—"];
+    const dayMap = new Map(countBy(rows, r=>r.daypart || "—"));
+    upsertChart("chDaypart", "bar", dayOrder, dayOrder.map(k => dayMap.get(k) || 0));
+
+    const themes = countBy(rows, r=>r.theme || "—").slice(0,15);
+    upsertChart("chThemes", "bar", themes.map(x=>x[0]), themes.map(x=>x[1]));
+
+    const subs = countBy(rows, r=>r.subtheme || "—").slice(0,15);
+    upsertChart("chSubthemes", "bar", subs.map(x=>x[0]), subs.map(x=>x[1]));
+
+    const tagRows = [];
+    for (const r of rows) {
+      const parts = (r.tags || "").split(",").map(x=>x.trim()).filter(Boolean);
+      if (parts.length === 0) tagRows.push({ tag: "—" });
+      else for (const t of parts) tagRows.push({ tag: t });
+    }
+    const tags = countBy(tagRows, x=>x.tag).slice(0,15);
+    upsertChart("chTags", "bar", tags.map(x=>x[0]), tags.map(x=>x[1]));
+
+    const comments = rows.filter(r => (r.comment || "").trim() !== "");
+    const tbody = $("commentsBody");
+    tbody.innerHTML = "";
+    for (const r of comments.slice(0,200)) {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${escapeHtml(r.id)}</td>
+        <td>${r.link ? `<a href="${escapeAttr(r.link)}" target="_blank">link</a>` : ""}</td>
+        <td>${escapeHtml(r.company)}</td>
+        <td>${escapeHtml(r.folder)}</td>
+        <td>${escapeHtml(r.month)}</td>
+        <td>${escapeHtml(r.csat)}</td>
+        <td>${escapeHtml(r.comment)}</td>
+      `;
+      tbody.appendChild(tr);
+    }
+
+    setStatus(`Готово · ${total} строк`);
+  }
+
+  async function init() {
+    try {
+      setStatus("Загружаю CSV…");
+      const resp = await fetch(CSV_URL, { cache: "no-store" });
+      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+      const csv = await resp.text();
+      const parsed = parseCSV(csv);
+      rawRows = normalize(parsed);
+
+      fillSelect($("fFolder"), uniq(rawRows.map(r=>r.folder)));
+      fillSelect($("fCompany"), uniq(rawRows.map(r=>r.company)));
+      fillSelect($("fMonth"), uniq(rawRows.map(r=>r.month)));
+
+      $("fFolder").addEventListener("change", render);
+      $("fCompany").addEventListener("change", render);
+      $("fMonth").addEventListener("change", render);
+      $("btnReset").addEventListener("click", () => {
+        $("fFolder").value = "Все";
+        $("fCompany").value = "Все";
+        $("fMonth").value = "Все";
+        render();
+      });
+
+      render();
+    } catch (e) {
+      console.error(e);
+      setStatus("Ошибка загрузки", true);
+      alert("Не получилось загрузить данные: " + e.message + "\n\nПроверь публикацию листа и доступность CSV.");
+    }
+  }
+
+  init();
+</script>
+</body>
+</html>
