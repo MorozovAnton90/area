@@ -3,6 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="robots" content="noindex, nofollow" />
   <title>Premium Support Dashboard</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <style>
@@ -30,9 +31,51 @@
     .small { font-size: 12px; }
     button { font-family: inherit; }
     .danger { background:#fff2f2; border-color:#ffd0d0; }
+
+    /* Auth overlay */
+    .overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.35);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 9999;
+    }
+    .modal {
+      width: min(420px, calc(100% - 32px));
+      background: #fff; border: 1px solid #e6e6e6; border-radius: 16px;
+      padding: 16px;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.15);
+    }
+    .modal h2 { margin: 0 0 6px 0; font-size: 18px; }
+    .modal p { margin: 0 0 12px 0; color: #666; font-size: 13px; }
+    .modal input {
+      width: 100%; padding: 10px 12px; border: 1px solid #dcdcdc; border-radius: 10px;
+      font-size: 14px;
+    }
+    .modal .actions { display:flex; gap:10px; margin-top: 12px; }
+    .btn {
+      padding: 10px 12px; border-radius: 10px; border: 1px solid #dcdcdc; background: #fff; cursor: pointer;
+    }
+    .btn.primary { border-color: #0b57d0; }
+    .error { color: #b00020; font-size: 12px; margin-top: 8px; display:none; }
   </style>
 </head>
 <body>
+
+<div class="overlay" id="authOverlay" aria-hidden="true">
+  <div class="modal">
+    <h2>Доступ ограничен</h2>
+    <p>Введите пароль, чтобы загрузить данные дашборда.</p>
+    <input id="authPass" type="password" placeholder="Пароль" autocomplete="current-password" />
+    <div class="actions">
+      <button class="btn primary" id="authBtn">Войти</button>
+      <button class="btn" id="authClear" title="Сбросить сохранённый доступ">Сброс</button>
+    </div>
+    <div class="error" id="authErr">Неверный пароль.</div>
+    <p class="muted" style="margin-top:10px">
+      Примечание: это защита от случайного просмотра (не «банковский сейф»).
+    </p>
+  </div>
+</div>
+
 <header>
   <div class="wrap">
     <div class="row" style="justify-content:space-between">
@@ -41,7 +84,7 @@
         <div class="muted">Источник: Google Sheets → DATA Prep (CSV)</div>
       </div>
       <div class="row small">
-        <span class="pill" id="statusPill">Загрузка…</span>
+        <span class="pill" id="statusPill">Ожидаю пароль…</span>
       </div>
     </div>
 
@@ -146,6 +189,10 @@
 
 <script>
   const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQi21ArcQD2Cma1WXMx0lDKL6VoAoLoK-fqY-ZbT4j-fIFmOf1fL9GIxKhA5_M4hc2K-AJ6lAtloWLc/pub?output=csv&gid=960906784";
+  const PASSWORD_HASH_HEX = "c4611127d5343f3a138ef1ebe8aa75d828c85fd743bcada517f1df04a1fb7c84"; // пароль по умолчанию: smartway-premium
+
+  // Сохраняем доступ в sessionStorage (сбросится при закрытии вкладки)
+  const AUTH_KEY = "ps_dash_auth_ok";
 
   const $ = (id) => document.getElementById(id);
   let rawRows = [];
@@ -155,6 +202,66 @@
     const el = $("statusPill");
     el.textContent = text;
     el.classList.toggle("danger", !!danger);
+  }
+
+  async function sha256Hex(str) {
+    const enc = new TextEncoder().encode(str);
+    const buf = await crypto.subtle.digest("SHA-256", enc);
+    return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, "0")).join("");
+  }
+
+  function authShow() { $("authOverlay").style.display = "flex"; }
+  function authHide() { $("authOverlay").style.display = "none"; }
+
+  function authWire(startAppFn) {
+    const input = $("authPass");
+    const btn = $("authBtn");
+    const err = $("authErr");
+    const clear = $("authClear");
+
+    const attempt = async () => {
+      err.style.display = "none";
+      btn.disabled = true;
+      const old = btn.textContent;
+      btn.textContent = "Проверяю…";
+      try {
+        const hex = await sha256Hex(input.value || "");
+        if (hex !== PASSWORD_HASH_HEX) {
+          err.style.display = "block";
+          return;
+        }
+        sessionStorage.setItem(AUTH_KEY, "1");
+        authHide();
+        setStatus("Доступ разрешён. Загружаю данные…");
+        startAppFn();
+      } finally {
+        btn.disabled = false;
+        btn.textContent = old;
+      }
+    };
+
+    btn.addEventListener("click", attempt);
+    input.addEventListener("keydown", (e) => { if (e.key === "Enter") attempt(); });
+    clear.addEventListener("click", () => {
+      sessionStorage.removeItem(AUTH_KEY);
+      input.value = "";
+      err.style.display = "none";
+      authShow();
+      setStatus("Ожидаю пароль…");
+    });
+  }
+
+  function bootWithAuth(startAppFn) {
+    const ok = sessionStorage.getItem(AUTH_KEY) === "1";
+    if (ok) {
+      authHide();
+      setStatus("Доступ разрешён. Загружаю данные…");
+      startAppFn();
+    } else {
+      authShow();
+      setStatus("Ожидаю пароль…");
+      authWire(startAppFn);
+    }
   }
 
   function parseCSV(text) {
@@ -167,7 +274,6 @@
     for (let i = 0; i < text.length; i++) {
       const c = text[i];
       const n = text[i + 1];
-
       if (c === '"' && inQuotes && n === '"') { cur += '"'; i++; continue; }
       if (c === '"') { inQuotes = !inQuotes; continue; }
       if (c === ',' && !inQuotes) { pushCell(); continue; }
@@ -187,9 +293,7 @@
     const idx = Object.fromEntries(header.map((h, i) => [h, i]));
 
     const required = ["ID","Link","Theme","Subtheme","Tags","CSAT","Comment","ClientCompany","Folder","Month","Daypart"];
-    for (const r of required) if (!(r in idx)) {
-      throw new Error("В CSV не найден столбец: " + r);
-    }
+    for (const r of required) if (!(r in idx)) throw new Error("В CSV не найден столбец: " + r);
 
     return rows.slice(1).map(r => ({
       id: r[idx["ID"]] || "",
@@ -216,7 +320,6 @@
     all.value = "Все";
     all.textContent = "Все";
     sel.appendChild(all);
-
     for (const v of values) {
       const o = document.createElement("option");
       o.value = v; o.textContent = v;
@@ -229,7 +332,6 @@
     const fFolder = $("fFolder").value;
     const fCompany = $("fCompany").value;
     const fMonth = $("fMonth").value;
-
     return rawRows.filter(r =>
       (fFolder === "Все" || r.folder === fFolder) &&
       (fCompany === "Все" || r.company === fCompany) &&
@@ -344,8 +446,7 @@
       const resp = await fetch(CSV_URL, { cache: "no-store" });
       if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
       const csv = await resp.text();
-      const parsed = parseCSV(csv);
-      rawRows = normalize(parsed);
+      rawRows = normalize(parseCSV(csv));
 
       fillSelect($("fFolder"), uniq(rawRows.map(r=>r.folder)));
       fillSelect($("fCompany"), uniq(rawRows.map(r=>r.company)));
@@ -369,7 +470,8 @@
     }
   }
 
-  init();
+  // Стартуем только после пароля
+  bootWithAuth(() => init());
 </script>
 </body>
 </html>
