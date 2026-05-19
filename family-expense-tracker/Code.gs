@@ -21,13 +21,26 @@ var TG_API = "https://api.telegram.org/bot" + BOT_TOKEN;
 // Точка входа — вызывается при каждом запросе от Telegram
 // ============================================================
 function doPost(e) {
+  var chatId = null;
   try {
     var update = JSON.parse(e.postData.contents);
+
+    // Защита от дубликатов: каждый update_id обрабатываем только один раз
+    var updateId = String(update.update_id);
+    var cache = CacheService.getScriptCache();
+    if (cache.get(updateId)) {
+      return ContentService.createTextOutput("OK");
+    }
+    cache.put(updateId, "1", 300); // помним 5 минут
+
+    if (update.message) chatId = update.message.chat.id;
     processUpdate(update);
   } catch (err) {
     Logger.log("Ошибка doPost: " + err.toString());
+    if (chatId) {
+      try { sendMessage(chatId, "⚠️ Ошибка: " + err.toString()); } catch(e2) {}
+    }
   }
-  // Всегда возвращаем 200 OK, иначе Telegram будет слать повторно
   return ContentService.createTextOutput("OK");
 }
 
