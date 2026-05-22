@@ -1,0 +1,942 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Дашборд расходов 💰</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<style>
+/* ================================================================
+   CSS VARIABLES — светлая и тёмная тема (Pantone Summer palette)
+   ================================================================ */
+:root {
+  /* Pantone Summer palette */
+  --coral:    #FF7B54;
+  --peach:    #FFBE98;
+  --yellow:   #F5C842;
+  --mint:     #6BCB77;
+  --sky:      #4D96FF;
+  --lavender: #C77DFF;
+  --rose:     #FF6B9D;
+  --teal:     #40BFB0;
+  --orange:   #FF9F43;
+  --sage:     #7CB87A;
+  --gray:     #B0B8C4;
+}
+
+[data-theme="light"] {
+  --bg:            #FEF6EE;
+  --bg2:           #FFFFFF;
+  --card:          rgba(255,255,255,0.82);
+  --card-hover:    rgba(255,255,255,0.97);
+  --text:          #1E2535;
+  --text2:         #5A6478;
+  --muted:         #9BA8BC;
+  --border:        rgba(255,140,100,0.18);
+  --glass-border:  rgba(255,140,100,0.25);
+  --shadow:        0 2px 20px rgba(255,100,60,0.10);
+  --shadow-h:      0 8px 32px rgba(255,100,60,0.18);
+  --chart-grid:    rgba(0,0,0,0.055);
+  --input-bg:      rgba(255,255,255,0.92);
+  --period-bg:     rgba(255,190,152,0.18);
+  --period-active: #FFFFFF;
+  --body-grad:     linear-gradient(145deg,#FFF0E5 0%,#FDF6FF 55%,#EAF2FF 100%);
+}
+
+[data-theme="dark"] {
+  --bg:            #0E1018;
+  --bg2:           #161A26;
+  --card:          rgba(22,26,38,0.85);
+  --card-hover:    rgba(28,33,48,0.97);
+  --text:          #DDE4F0;
+  --text2:         #8A96AE;
+  --muted:         #5A6478;
+  --border:        rgba(255,140,100,0.12);
+  --glass-border:  rgba(255,140,100,0.18);
+  --shadow:        0 2px 20px rgba(0,0,0,0.45);
+  --shadow-h:      0 8px 32px rgba(0,0,0,0.65);
+  --chart-grid:    rgba(255,255,255,0.055);
+  --input-bg:      rgba(22,26,38,0.92);
+  --period-bg:     rgba(255,140,100,0.12);
+  --period-active: rgba(40,46,65,0.95);
+  --body-grad:     linear-gradient(145deg,#0E1018 0%,#0F1220 55%,#0A0D18 100%);
+}
+
+/* ================================================================
+   RESET & BASE
+   ================================================================ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', Helvetica, sans-serif;
+  background: var(--body-grad);
+  background-attachment: fixed;
+  color: var(--text);
+  min-height: 100vh;
+  transition: background 0.5s, color 0.3s;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ================================================================
+   LOADING SCREEN
+   ================================================================ */
+#loading {
+  position: fixed; inset: 0; z-index: 999;
+  background: var(--body-grad);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 16px;
+  transition: opacity 0.5s;
+}
+.spin {
+  width: 52px; height: 52px;
+  border-radius: 50%;
+  border: 4px solid var(--border);
+  border-top-color: var(--coral);
+  animation: spin 0.9s linear infinite;
+}
+.loading-msg { font-size: 15px; color: var(--text2); font-weight: 500; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ================================================================
+   HEADER
+   ================================================================ */
+.header {
+  position: sticky; top: 0; z-index: 100;
+  backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
+  background: var(--card);
+  border-bottom: 1px solid var(--glass-border);
+  box-shadow: var(--shadow);
+  padding: 14px 28px;
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px;
+}
+.header-brand { display: flex; align-items: center; gap: 11px; }
+.logo {
+  width: 38px; height: 38px;
+  border-radius: 11px;
+  background: linear-gradient(135deg, var(--coral), var(--orange));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 19px;
+  box-shadow: 0 3px 10px rgba(255,120,80,0.4);
+  flex-shrink: 0;
+}
+.brand-title {
+  font-size: 20px; font-weight: 800; letter-spacing: -0.4px;
+  background: linear-gradient(120deg, var(--coral) 0%, var(--lavender) 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.brand-sub { font-size: 12px; color: var(--muted); margin-top: 1px; }
+
+.btn-icon {
+  width: 40px; height: 40px;
+  border: 1px solid var(--glass-border);
+  border-radius: 11px;
+  background: var(--input-bg);
+  cursor: pointer; font-size: 18px;
+  display: flex; align-items: center; justify-content: center;
+  transition: transform 0.25s, box-shadow 0.25s;
+  backdrop-filter: blur(10px);
+}
+.btn-icon:hover { transform: scale(1.1); box-shadow: 0 4px 14px rgba(255,120,80,0.3); }
+
+/* ================================================================
+   CONTAINER
+   ================================================================ */
+.container { max-width: 1380px; margin: 0 auto; padding: 24px 28px; }
+
+/* ================================================================
+   FILTERS
+   ================================================================ */
+.filters {
+  display: flex; gap: 14px; flex-wrap: wrap;
+  align-items: flex-end; margin-bottom: 24px;
+}
+.filter-group { display: flex; flex-direction: column; gap: 5px; }
+.filter-label {
+  font-size: 11px; font-weight: 700; color: var(--muted);
+  text-transform: uppercase; letter-spacing: 0.6px;
+}
+.filter-select {
+  padding: 9px 34px 9px 14px;
+  border-radius: 11px;
+  border: 1px solid var(--glass-border);
+  background: var(--input-bg);
+  color: var(--text);
+  font-size: 14px; font-weight: 500;
+  cursor: pointer; outline: none;
+  transition: border-color 0.25s, box-shadow 0.25s;
+  min-width: 170px;
+  appearance: none; -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='7' viewBox='0 0 11 7'%3E%3Cpath d='M1 1l4.5 4.5L10 1' stroke='%239BA8BC' stroke-width='1.7' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 12px center;
+}
+.filter-select:focus {
+  border-color: var(--coral);
+  box-shadow: 0 0 0 3px rgba(255,123,84,0.18);
+}
+
+.period-toggle {
+  display: flex; gap: 3px;
+  background: var(--period-bg);
+  border-radius: 10px; padding: 4px;
+  border: 1px solid var(--glass-border);
+}
+.period-btn {
+  padding: 6px 16px;
+  border-radius: 8px; border: none;
+  background: transparent;
+  color: var(--text2);
+  font-size: 13px; font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s;
+}
+.period-btn.active {
+  background: var(--period-active);
+  color: var(--text);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+}
+
+/* ================================================================
+   SUMMARY CARDS
+   ================================================================ */
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 18px; margin-bottom: 22px;
+}
+
+.scard {
+  background: var(--card);
+  backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
+  border: 1px solid var(--glass-border);
+  border-radius: 18px; padding: 22px;
+  box-shadow: var(--shadow);
+  transition: transform 0.35s, box-shadow 0.35s, background 0.35s;
+  animation: fadeUp 0.55s ease both;
+  position: relative; overflow: hidden;
+  cursor: default;
+}
+.scard::after {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  background: var(--stripe, linear-gradient(90deg,var(--coral),var(--orange)));
+  border-radius: 18px 18px 0 0;
+}
+.scard:hover { transform: translateY(-5px); box-shadow: var(--shadow-h); background: var(--card-hover); }
+.scard:nth-child(1) { animation-delay:.08s; --stripe: linear-gradient(90deg,#FF7B54,#FF9F43); }
+.scard:nth-child(2) { animation-delay:.16s; --stripe: linear-gradient(90deg,#4D96FF,#40BFB0); }
+.scard:nth-child(3) { animation-delay:.24s; --stripe: linear-gradient(90deg,#C77DFF,#FF6B9D); }
+.scard:nth-child(4) { animation-delay:.32s; --stripe: linear-gradient(90deg,#6BCB77,#40BFB0); }
+
+.scard-icon {
+  width: 44px; height: 44px; border-radius: 13px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px; margin-bottom: 14px;
+}
+.scard:nth-child(1) .scard-icon { background: linear-gradient(135deg,rgba(255,123,84,.18),rgba(255,159,67,.18)); }
+.scard:nth-child(2) .scard-icon { background: linear-gradient(135deg,rgba(77,150,255,.18),rgba(64,191,176,.18)); }
+.scard:nth-child(3) .scard-icon { background: linear-gradient(135deg,rgba(199,125,255,.18),rgba(255,107,157,.18)); }
+.scard:nth-child(4) .scard-icon { background: linear-gradient(135deg,rgba(107,203,119,.18),rgba(64,191,176,.18)); }
+
+.scard-label {
+  font-size: 11px; font-weight: 700; color: var(--muted);
+  text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 7px;
+}
+.scard-value {
+  font-size: 28px; font-weight: 900; letter-spacing: -0.8px;
+  color: var(--text); line-height: 1; margin-bottom: 5px;
+}
+.scard-sub { font-size: 12px; color: var(--muted); }
+
+/* ================================================================
+   CHART GRID
+   ================================================================ */
+.charts-grid {
+  display: grid;
+  grid-template-columns: 5fr 7fr;
+  grid-template-rows: auto auto;
+  gap: 18px;
+}
+
+.ccard {
+  background: var(--card);
+  backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
+  border: 1px solid var(--glass-border);
+  border-radius: 18px; padding: 22px;
+  box-shadow: var(--shadow);
+  transition: transform 0.35s, box-shadow 0.35s, background 0.35s;
+  animation: fadeUp 0.55s ease both;
+}
+.ccard:hover { transform: translateY(-4px); box-shadow: var(--shadow-h); }
+.ccard:nth-child(1) { animation-delay:.40s; }
+.ccard:nth-child(2) { animation-delay:.48s; }
+.ccard:nth-child(3) { animation-delay:.56s; }
+.ccard:nth-child(4) { animation-delay:.64s; }
+
+.ccard-header {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  margin-bottom: 18px;
+}
+.ccard-title { font-size: 15px; font-weight: 700; color: var(--text); }
+.ccard-sub { font-size: 12px; color: var(--muted); margin-top: 3px; }
+.badge {
+  padding: 4px 11px; border-radius: 20px;
+  font-size: 11px; font-weight: 700;
+  background: rgba(255,123,84,0.12);
+  color: var(--coral);
+  border: 1px solid rgba(255,123,84,0.22);
+  flex-shrink: 0;
+}
+
+.chart-wrap { position: relative; height: 265px; }
+.donut-wrap {
+  position: relative; height: 230px;
+  display: flex; align-items: center; justify-content: center;
+}
+
+/* ================================================================
+   LEGEND
+   ================================================================ */
+.legend {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 6px 12px; margin-top: 14px;
+}
+.legend-item {
+  display: flex; align-items: center; gap: 7px;
+  font-size: 12px; color: var(--text2);
+}
+.legend-dot {
+  width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0;
+}
+.legend-name {
+  flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.legend-pct { font-weight: 800; color: var(--text); font-size: 12px; }
+.legend-amt { font-size: 11px; color: var(--muted); margin-left: 2px; }
+
+/* ================================================================
+   TOP LIST
+   ================================================================ */
+.top-list { list-style: none; }
+.top-item {
+  display: flex; align-items: center; gap: 11px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+  transition: padding-left 0.25s;
+  animation: slideRight 0.4s ease both;
+}
+.top-item:last-child { border-bottom: none; }
+.top-item:hover { padding-left: 6px; }
+.rank {
+  width: 26px; height: 26px; border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 900; flex-shrink: 0;
+}
+.rank-1 { background: linear-gradient(135deg,#FFD700,#FFA500); color:#fff; }
+.rank-2 { background: linear-gradient(135deg,#C0C0C0,#909090); color:#fff; }
+.rank-3 { background: linear-gradient(135deg,#CD7F32,#9A5C21); color:#fff; }
+.rank-n  { background: var(--border); color: var(--muted); }
+.top-info { flex: 1; min-width: 0; }
+.top-cat  { font-size: 13px; font-weight: 700; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.top-meta { font-size: 11px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 1px; }
+.top-amt  { font-size: 15px; font-weight: 900; color: var(--coral); flex-shrink: 0; }
+
+/* ================================================================
+   EMPTY STATE
+   ================================================================ */
+.empty { text-align: center; padding: 36px 16px; color: var(--muted); }
+.empty-icon { font-size: 36px; margin-bottom: 10px; }
+.empty p { font-size: 13px; }
+
+/* ================================================================
+   ANIMATIONS
+   ================================================================ */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(22px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes slideRight {
+  from { opacity: 0; transform: translateX(-16px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+/* ================================================================
+   RESPONSIVE
+   ================================================================ */
+@media (max-width: 1100px) {
+  .charts-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 768px) {
+  .container { padding: 14px 14px; }
+  .header { padding: 12px 16px; }
+  .brand-title { font-size: 17px; }
+  .summary-grid { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 480px) {
+  .summary-grid { grid-template-columns: 1fr; }
+  .legend { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- Загрузка -->
+<div id="loading">
+  <div class="spin"></div>
+  <p class="loading-msg">Загружаем данные из таблицы…</p>
+</div>
+
+<!-- Шапка -->
+<header class="header">
+  <div class="header-brand">
+    <div class="logo">💰</div>
+    <div>
+      <div class="brand-title">Расходы</div>
+      <div class="brand-sub" id="hSub">Дашборд</div>
+    </div>
+  </div>
+  <button class="btn-icon" id="themeBtn" onclick="toggleTheme()" title="Тема">🌙</button>
+</header>
+
+<!-- Основной контент -->
+<div class="container">
+
+  <!-- Фильтры -->
+  <div class="filters">
+    <div class="filter-group">
+      <span class="filter-label">Месяц</span>
+      <select class="filter-select" id="fMonth" onchange="applyFilters()">
+        <option value="all">Все месяцы</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <span class="filter-label">Автор</span>
+      <select class="filter-select" id="fAuthor" onchange="applyFilters()">
+        <option value="all">Все авторы</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <span class="filter-label">График</span>
+      <div class="period-toggle">
+        <button class="period-btn active" id="pDays"  onclick="setPeriod('days')">Дни</button>
+        <button class="period-btn"        id="pWeeks" onclick="setPeriod('weeks')">Недели</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Итоги -->
+  <div class="summary-grid">
+    <div class="scard">
+      <div class="scard-icon">💸</div>
+      <div class="scard-label">Сумма расходов</div>
+      <div class="scard-value" id="sTotal">—</div>
+      <div class="scard-sub" id="sTotalSub">за период</div>
+    </div>
+    <div class="scard">
+      <div class="scard-icon">📅</div>
+      <div class="scard-label">Средний день</div>
+      <div class="scard-value" id="sAvg">—</div>
+      <div class="scard-sub" id="sAvgSub">в среднем</div>
+    </div>
+    <div class="scard">
+      <div class="scard-icon">🔥</div>
+      <div class="scard-label">Рекорд</div>
+      <div class="scard-value" id="sMax">—</div>
+      <div class="scard-sub" id="sMaxSub">самая крупная</div>
+    </div>
+    <div class="scard">
+      <div class="scard-icon">🧾</div>
+      <div class="scard-label">Транзакций</div>
+      <div class="scard-value" id="sCount">—</div>
+      <div class="scard-sub" id="sCountSub">операций</div>
+    </div>
+  </div>
+
+  <!-- Графики -->
+  <div class="charts-grid">
+
+    <!-- Пончик -->
+    <div class="ccard">
+      <div class="ccard-header">
+        <div>
+          <div class="ccard-title">По категориям</div>
+          <div class="ccard-sub">Структура расходов</div>
+        </div>
+      </div>
+      <div class="donut-wrap"><canvas id="donutChart"></canvas></div>
+      <div class="legend" id="donutLegend"></div>
+    </div>
+
+    <!-- Столбцы по дням/неделям -->
+    <div class="ccard">
+      <div class="ccard-header">
+        <div>
+          <div class="ccard-title">Расходы по периодам</div>
+          <div class="ccard-sub" id="barSub">По дням</div>
+        </div>
+      </div>
+      <div class="chart-wrap"><canvas id="barChart"></canvas></div>
+    </div>
+
+    <!-- Линейный — сравнение месяцев -->
+    <div class="ccard">
+      <div class="ccard-header">
+        <div>
+          <div class="ccard-title">Сравнение месяцев</div>
+          <div class="ccard-sub">Динамика расходов</div>
+        </div>
+      </div>
+      <div class="chart-wrap"><canvas id="lineChart"></canvas></div>
+    </div>
+
+    <!-- Топ трат -->
+    <div class="ccard">
+      <div class="ccard-header">
+        <div>
+          <div class="ccard-title">Топ трат</div>
+          <div class="ccard-sub">Крупнейшие операции</div>
+        </div>
+        <span class="badge" id="topBadge">Топ 7</span>
+      </div>
+      <ul class="top-list" id="topList"></ul>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// ============================================================
+// КОНСТАНТЫ
+// ============================================================
+const CAT_COLORS = {
+  'Еда':                    '#FF7B54',
+  'Дом и быт':              '#4D96FF',
+  'Мирон':                  '#C77DFF',
+  'Одежда и обувь':         '#FF6B9D',
+  'Обязательные платежи':   '#F5C842',
+  'Транспорт':              '#40BFB0',
+  'Красота и уход':         '#FFBE98',
+  'Медицина':               '#6BCB77',
+  'Подарки':                '#FF9F43',
+  'Маркетплейсы / разное':  '#7CB87A',
+  'Непонятное':             '#B0B8C4'
+};
+const BAR_PALETTE = ['#FF7B54','#FF9F43','#F5C842','#6BCB77','#40BFB0','#4D96FF','#C77DFF','#FF6B9D','#FFBE98','#7CB87A'];
+const MO_FULL  = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
+const MO_SHORT = ['Янв','Фев','Мар','Апр','Май','Июн','Июл','Авг','Сен','Окт','Ноя','Дек'];
+
+// ============================================================
+// STATE
+// ============================================================
+let allData = [];
+let filtered = [];
+let period = 'days';
+const charts = {};
+
+// ============================================================
+// ТЕМА
+// ============================================================
+function toggleTheme() {
+  const html = document.documentElement;
+  const dark = html.dataset.theme === 'dark';
+  html.dataset.theme = dark ? 'light' : 'dark';
+  document.getElementById('themeBtn').textContent = dark ? '🌙' : '☀️';
+  refreshChartsTheme();
+}
+
+// ============================================================
+// ЗАГРУЗКА ДАННЫХ
+// ============================================================
+window.addEventListener('load', () => {
+  if (typeof google !== 'undefined' && google.script) {
+    google.script.run
+      .withSuccessHandler(onData)
+      .withFailureHandler(err => { console.error(err); loadDemo(); })
+      .getDashboardData();
+  } else {
+    loadDemo();
+  }
+});
+
+function onData(json) {
+  try {
+    const r = JSON.parse(json);
+    if (r.success && r.data && r.data.length > 0) {
+      allData = r.data;
+      init();
+    } else {
+      loadDemo();
+    }
+  } catch(e) { loadDemo(); }
+}
+
+function loadDemo() {
+  const cats = Object.keys(CAT_COLORS);
+  const authors = ['Антон','Маша'];
+  const now = new Date();
+  allData = [];
+  for (let m = 0; m < 6; m++) {
+    const y = now.getFullYear(), mo = now.getMonth() - m;
+    const base = new Date(y, mo, 1);
+    const days = new Date(y, mo + 1, 0).getDate();
+    const n = 22 + Math.floor(Math.random() * 20);
+    for (let i = 0; i < n; i++) {
+      const cat = cats[Math.floor(Math.random() * cats.length)];
+      const d = new Date(base.getFullYear(), base.getMonth(), 1 + Math.floor(Math.random() * days));
+      const amt = cat === 'Обязательные платежи'
+        ? 2500 + Math.floor(Math.random() * 12000)
+        : 150 + Math.floor(Math.random() * 4500);
+      allData.push({
+        id: allData.length + 1,
+        date: fmtDate(d),
+        amount: amt,
+        category: cat,
+        comment: `Трата — ${cat.toLowerCase()}`,
+        author: authors[Math.floor(Math.random() * authors.length)],
+        message: ''
+      });
+    }
+  }
+  init();
+}
+
+// ============================================================
+// ИНИЦИАЛИЗАЦИЯ
+// ============================================================
+function init() {
+  buildFilters();
+  applyFilters();
+  hideLoading();
+}
+
+function hideLoading() {
+  const el = document.getElementById('loading');
+  el.style.opacity = '0';
+  setTimeout(() => el.style.display = 'none', 480);
+}
+
+// ============================================================
+// ФИЛЬТРЫ
+// ============================================================
+function buildFilters() {
+  const months = new Set();
+  const authors = new Set();
+  allData.forEach(r => {
+    if (r.date) months.add(r.date.slice(0, 7));
+    if (r.author) authors.add(r.author);
+  });
+
+  const mSel = document.getElementById('fMonth');
+  [...months].sort().reverse().forEach(m => {
+    const [y, mo] = m.split('-');
+    const opt = document.createElement('option');
+    opt.value = m;
+    opt.textContent = `${MO_FULL[+mo - 1]} ${y}`;
+    mSel.appendChild(opt);
+  });
+  if ([...months].length > 0) mSel.value = [...months].sort().reverse()[0];
+
+  const aSel = document.getElementById('fAuthor');
+  [...authors].sort().forEach(a => {
+    const opt = document.createElement('option');
+    opt.value = a; opt.textContent = a;
+    aSel.appendChild(opt);
+  });
+}
+
+function applyFilters() {
+  const month  = document.getElementById('fMonth').value;
+  const author = document.getElementById('fAuthor').value;
+  filtered = allData.filter(r => {
+    if (!r.date) return false;
+    if (month  !== 'all' && r.date.slice(0, 7) !== month)  return false;
+    if (author !== 'all' && r.author !== author) return false;
+    return true;
+  });
+  updateAll();
+}
+
+function setPeriod(p) {
+  period = p;
+  document.getElementById('pDays').classList.toggle('active',  p === 'days');
+  document.getElementById('pWeeks').classList.toggle('active', p === 'weeks');
+  document.getElementById('barSub').textContent = p === 'days' ? 'По дням' : 'По неделям';
+  buildBarChart();
+}
+
+// ============================================================
+// ОБНОВЛЕНИЕ ВСЕГО ДАШБОРДА
+// ============================================================
+function updateAll() {
+  updateSummary();
+  buildDonut();
+  buildBarChart();
+  buildLineChart();
+  buildTopList();
+  updateHeaderSub();
+}
+
+// ============================================================
+// ЗАГОЛОВОК
+// ============================================================
+function updateHeaderSub() {
+  const month = document.getElementById('fMonth').value;
+  const sub = month === 'all'
+    ? `${allData.length} транзакций за всё время`
+    : (() => { const [y,m] = month.split('-'); return `${MO_FULL[+m-1]} ${y} · ${filtered.length} транзакций`; })();
+  document.getElementById('hSub').textContent = sub;
+}
+
+// ============================================================
+// ИТОГОВЫЕ КАРТОЧКИ
+// ============================================================
+function updateSummary() {
+  const total = filtered.reduce((s, r) => s + r.amount, 0);
+  const days  = new Set(filtered.map(r => r.date)).size;
+  const avg   = days > 0 ? total / days : 0;
+  const maxR  = filtered.reduce((a, r) => r.amount > (a ? a.amount : 0) ? r : a, null);
+
+  document.getElementById('sTotal').textContent    = fmt(total);
+  document.getElementById('sAvg').textContent      = fmt(avg);
+  document.getElementById('sMax').textContent      = maxR ? fmt(maxR.amount) : '—';
+  document.getElementById('sCount').textContent    = filtered.length;
+  document.getElementById('sTotalSub').textContent = `${filtered.length} операций`;
+  document.getElementById('sAvgSub').textContent   = `${days} дн. в периоде`;
+  document.getElementById('sMaxSub').textContent   = maxR ? maxR.category : '—';
+  document.getElementById('sCountSub').textContent = days > 0 ? `${(filtered.length / days).toFixed(1)}/день` : '';
+}
+
+// ============================================================
+// ПОНЧИК
+// ============================================================
+function buildDonut() {
+  const bycat = {};
+  filtered.forEach(r => { bycat[r.category] = (bycat[r.category] || 0) + r.amount; });
+  const sorted = Object.entries(bycat).sort((a,b) => b[1]-a[1]);
+  const labels = sorted.map(([k]) => k);
+  const vals   = sorted.map(([,v]) => v);
+  const colors = labels.map(l => CAT_COLORS[l] || '#B0B8C4');
+  const total  = vals.reduce((s,v) => s+v, 0);
+
+  if (charts.donut) charts.donut.destroy();
+
+  // Плагин: текст в центре
+  const centerPlugin = {
+    id: 'center',
+    afterDraw(chart) {
+      if (chart.config.type !== 'doughnut') return;
+      const { ctx, chartArea: {left,top,right,bottom} } = chart;
+      const cx = (left+right)/2, cy = (top+bottom)/2;
+      const dark = document.documentElement.dataset.theme === 'dark';
+      ctx.save();
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.font = 'bold 17px -apple-system,sans-serif';
+      ctx.fillStyle = dark ? '#DDE4F0' : '#1E2535';
+      ctx.fillText(fmt(total), cx, cy - 9);
+      ctx.font = '11px -apple-system,sans-serif';
+      ctx.fillStyle = dark ? '#5A6478' : '#9BA8BC';
+      ctx.fillText('итого', cx, cy + 11);
+      ctx.restore();
+    }
+  };
+
+  charts.donut = new Chart(document.getElementById('donutChart'), {
+    type: 'doughnut',
+    data: {
+      labels,
+      datasets: [{ data: vals,
+        backgroundColor: colors.map(c => c + 'CC'),
+        borderColor: colors,
+        borderWidth: 2, hoverOffset: 10
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      cutout: '62%',
+      animation: { animateRotate: true, duration: 900 },
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: ctx => ` ${ctx.label}: ${fmt(ctx.raw)} (${total>0?(ctx.raw/total*100).toFixed(1):0}%)` } }
+      }
+    },
+    plugins: [centerPlugin]
+  });
+
+  // Легенда
+  const leg = document.getElementById('donutLegend');
+  leg.innerHTML = '';
+  sorted.forEach(([cat, amt]) => {
+    const pct = total > 0 ? (amt/total*100).toFixed(0) : 0;
+    const div = document.createElement('div');
+    div.className = 'legend-item';
+    div.innerHTML = `
+      <div class="legend-dot" style="background:${CAT_COLORS[cat]||'#B0B8C4'}"></div>
+      <span class="legend-name">${cat}</span>
+      <span class="legend-pct">${pct}%</span>`;
+    leg.appendChild(div);
+  });
+}
+
+// ============================================================
+// СТОЛБЧАТЫЙ ГРАФИК
+// ============================================================
+function buildBarChart() {
+  if (charts.bar) charts.bar.destroy();
+
+  let labels = [], vals = [];
+
+  if (period === 'days') {
+    const byDay = {};
+    filtered.forEach(r => { byDay[r.date] = (byDay[r.date] || 0) + r.amount; });
+    const sorted = Object.keys(byDay).sort();
+    labels = sorted.map(d => { const dt = new Date(d); return `${dt.getDate()} ${MO_SHORT[dt.getMonth()]}`; });
+    vals   = sorted.map(d => byDay[d]);
+  } else {
+    const byWeek = {};
+    filtered.forEach(r => {
+      const d = new Date(r.date), w = getWeek(d);
+      byWeek[w] = (byWeek[w] || 0) + r.amount;
+    });
+    const sorted = Object.keys(byWeek).sort();
+    labels = sorted.map(w => `Нед ${w}`);
+    vals   = sorted.map(w => byWeek[w]);
+  }
+
+  const dark = document.documentElement.dataset.theme === 'dark';
+  const grid = dark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)';
+  const tick = dark ? '#5A6478' : '#9BA8BC';
+
+  charts.bar = new Chart(document.getElementById('barChart'), {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{
+        data: vals,
+        backgroundColor: vals.map((_,i) => BAR_PALETTE[i % BAR_PALETTE.length] + '99'),
+        borderColor:      vals.map((_,i) => BAR_PALETTE[i % BAR_PALETTE.length]),
+        borderWidth: 1.5, borderRadius: 7, borderSkipped: false
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      animation: { duration: 750 },
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: { color: grid }, ticks: { color: tick, font:{size:11}, maxRotation: 45 } },
+        y: { grid: { color: grid }, ticks: { color: tick, font:{size:11}, callback: v => fmt(v) } }
+      }
+    }
+  });
+}
+
+// ============================================================
+// ЛИНЕЙНЫЙ — сравнение месяцев
+// ============================================================
+function buildLineChart() {
+  if (charts.line) charts.line.destroy();
+
+  const author = document.getElementById('fAuthor').value;
+  const byMonth = {};
+  allData.forEach(r => {
+    if (!r.date) return;
+    if (author !== 'all' && r.author !== author) return;
+    const key = r.date.slice(0,7);
+    byMonth[key] = (byMonth[key] || 0) + r.amount;
+  });
+  const sorted = Object.keys(byMonth).sort();
+  const labels = sorted.map(m => { const [y,mo] = m.split('-'); return `${MO_SHORT[+mo-1]} ${y}`; });
+  const vals   = sorted.map(m => byMonth[m]);
+
+  const dark = document.documentElement.dataset.theme === 'dark';
+  const grid = dark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)';
+  const tick = dark ? '#5A6478' : '#9BA8BC';
+
+  charts.line = new Chart(document.getElementById('lineChart'), {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [{
+        label: 'Расходы',
+        data: vals,
+        borderColor: '#FF7B54',
+        backgroundColor: 'rgba(255,123,84,0.10)',
+        borderWidth: 3, fill: true, tension: 0.42,
+        pointBackgroundColor: '#FF7B54',
+        pointBorderColor: dark ? '#161A26' : '#fff',
+        pointBorderWidth: 2.5, pointRadius: 6, pointHoverRadius: 9
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      animation: { duration: 900 },
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: { color: grid }, ticks: { color: tick, font:{size:11} } },
+        y: { grid: { color: grid }, ticks: { color: tick, font:{size:11}, callback: v => fmt(v) } }
+      }
+    }
+  });
+}
+
+// ============================================================
+// ТОП ТРАТ
+// ============================================================
+function buildTopList() {
+  const top7 = [...filtered].sort((a,b) => b.amount - a.amount).slice(0,7);
+  const ul = document.getElementById('topList');
+  ul.innerHTML = '';
+  if (!top7.length) {
+    ul.innerHTML = '<div class="empty"><div class="empty-icon">🔍</div><p>Нет данных</p></div>';
+    return;
+  }
+  document.getElementById('topBadge').textContent = `Топ ${top7.length}`;
+  top7.forEach((r,i) => {
+    const li = document.createElement('li');
+    li.className = 'top-item';
+    li.style.animationDelay = `${i * 0.07}s`;
+    const rnk = i === 0 ? 'rank-1' : i === 1 ? 'rank-2' : i === 2 ? 'rank-3' : 'rank-n';
+    const dt  = new Date(r.date);
+    const ds  = `${dt.getDate()} ${MO_SHORT[dt.getMonth()]}`;
+    li.innerHTML = `
+      <div class="rank ${rnk}">${i+1}</div>
+      <div class="top-info">
+        <div class="top-cat">${r.category}</div>
+        <div class="top-meta">${r.comment || ds}${r.author ? ' · '+r.author : ''} · ${ds}</div>
+      </div>
+      <div class="top-amt">${fmt(r.amount)}</div>`;
+    ul.appendChild(li);
+  });
+}
+
+// ============================================================
+// ОБНОВЛЕНИЕ ТЕМ В УЖЕ НАРИСОВАННЫХ ГРАФИКАХ
+// ============================================================
+function refreshChartsTheme() {
+  buildBarChart();
+  buildLineChart();
+}
+
+// ============================================================
+// УТИЛИТЫ
+// ============================================================
+function fmt(n) {
+  n = Math.round(n);
+  if (n >= 1000000) return (n/1000000).toFixed(1).replace('.0','') + 'М ₽';
+  if (n >= 1000)    return (n/1000).toFixed(n >= 10000 ? 0 : 1).replace('.0','') + 'К ₽';
+  return n.toLocaleString('ru') + ' ₽';
+}
+
+function fmtDate(d) {
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+function getWeek(d) {
+  const s = new Date(d.getFullYear(), 0, 1);
+  return Math.ceil(((d - s) / 86400000 + s.getDay() + 1) / 7);
+}
+</script>
+</body>
+</html>
