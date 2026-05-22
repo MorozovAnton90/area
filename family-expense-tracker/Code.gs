@@ -31,7 +31,7 @@ function doPost(e) {
     if (cache.get(updateId)) {
       return ContentService.createTextOutput("OK");
     }
-    cache.put(updateId, "1", 300); // помним 5 минут
+    cache.put(updateId, "1", 86400); // помним 24 часа
 
     if (update.message) chatId = update.message.chat.id;
     processUpdate(update);
@@ -195,7 +195,7 @@ function sendSuccessMessage(chatId, recordId, amount, category, comment) {
   var text = "✅ Записал:\n" +
     "💰 *" + formatAmount(amount) + " ₽*\n" +
     "📂 " + category + "\n" +
-    (comment ? "💬 " + comment : "");
+    (comment ? "💬 " + escapeMd(comment) : "");
 
   var keyboard = {
     inline_keyboard: [
@@ -213,7 +213,7 @@ function sendSuccessMessage(chatId, recordId, amount, category, comment) {
 function sendCategorySelector(chatId, recordId, amount, comment) {
   var text = "❓ Не определил категорию для:\n" +
     "💰 *" + formatAmount(amount) + " ₽*" +
-    (comment ? " — " + comment : "") +
+    (comment ? " — " + escapeMd(comment) : "") +
     "\n\nВыберите категорию:";
 
   var keyboard = buildCategoryKeyboard(recordId);
@@ -246,12 +246,20 @@ function buildCategoryKeyboard(recordId) {
 // Низкоуровневые функции Telegram API
 // ============================================================
 
+// Экранировать спецсимволы Markdown в пользовательском тексте
+function escapeMd(text) {
+  if (!text) return "";
+  return String(text).replace(/[_*`\[]/g, function(c) { return "\\" + c; });
+}
+
 // Отправить простое текстовое сообщение
 function sendMessage(chatId, text) {
   var url = TG_API + "/sendMessage";
+  // Обрезаем если слишком длинное (лимит Telegram 4096 символов)
+  var safeText = text.length > 4000 ? text.substring(0, 4000) + "\n\n_(сообщение обрезано)_" : text;
   var payload = {
     chat_id: chatId,
-    text: text,
+    text: safeText,
     parse_mode: "Markdown"
   };
   callTelegramApi(url, payload);
@@ -326,8 +334,8 @@ function callTelegramApi(url, payload) {
 // Настройка webhook — запустите эту функцию ОДИН РАЗ вручную
 // ============================================================
 function setWebhook() {
-  var scriptUrl = ScriptApp.getService().getUrl();
-  var url = TG_API + "/setWebhook?url=" + scriptUrl;
+  var webhookUrl = "https://script.google.com/macros/s/AKfycbz6LdcO5jWeEKnpOS30LUBOT_bVzZyNpYS4ZzzMKGfDoNA0nhehBrMh8HsI_IkvMvmCfA/exec";
+  var url = TG_API + "/setWebhook?url=" + encodeURIComponent(webhookUrl);
   var response = UrlFetchApp.fetch(url);
   Logger.log(response.getContentText());
 }
