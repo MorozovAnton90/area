@@ -19,6 +19,16 @@ var TG_API = "https://api.telegram.org/bot" + BOT_TOKEN;
 // Главная функция — вызывается триггером каждую минуту
 // ============================================================
 function pollUpdates() {
+  // Опрашиваем 3 раза за минуту: в 0, 20 и 40 секунд
+  // Это снижает среднее время ответа с 30 сек до ~10 сек
+  doSinglePoll();
+  Utilities.sleep(20000);
+  doSinglePoll();
+  Utilities.sleep(20000);
+  doSinglePoll();
+}
+
+function doSinglePoll() {
   var props = PropertiesService.getScriptProperties();
   var lastUpdateId = Number(props.getProperty("lastUpdateId") || 0);
 
