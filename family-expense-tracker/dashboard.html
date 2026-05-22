@@ -511,7 +511,7 @@ body {
 // ============================================================
 // КОНСТАНТЫ
 // ============================================================
-const CAT_COLORS = {
+const CAT_COLORS_BASE = {
   'Еда':                    '#FF7B54',
   'Дом и быт':              '#4D96FF',
   'Мирон':                  '#C77DFF',
@@ -524,6 +524,19 @@ const CAT_COLORS = {
   'Маркетплейсы / разное':  '#7CB87A',
   'Непонятное':             '#B0B8C4'
 };
+// Расширяемая палитра — новые категории получают цвет автоматически
+const AUTO_PALETTE = ['#FF7B54','#4D96FF','#C77DFF','#FF6B9D','#F5C842','#40BFB0','#FFBE98','#6BCB77','#FF9F43','#7CB87A','#B0B8C4','#E07B54','#5BA4CF','#A77BCA','#F0A500','#3ABFAB','#F4A26A','#5BCB77'];
+const CAT_COLORS = new Proxy(CAT_COLORS_BASE, {
+  get(target, cat) {
+    if (cat in target) return target[cat];
+    // Новая категория — назначаем цвет из палитры детерминированно
+    const idx = [...Object.keys(target)].length + hashStr(String(cat)) % (AUTO_PALETTE.length - Object.keys(CAT_COLORS_BASE).length);
+    const color = AUTO_PALETTE[idx % AUTO_PALETTE.length];
+    target[cat] = color;
+    return color;
+  }
+});
+function hashStr(s) { let h=0; for(let i=0;i<s.length;i++) h=(Math.imul(31,h)+s.charCodeAt(i))|0; return Math.abs(h); }
 const BAR_PALETTE = ['#FF7B54','#FF9F43','#F5C842','#6BCB77','#40BFB0','#4D96FF','#C77DFF','#FF6B9D','#FFBE98','#7CB87A'];
 const MO_FULL  = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
 const MO_SHORT = ['Янв','Фев','Мар','Апр','Май','Июн','Июл','Авг','Сен','Окт','Ноя','Дек'];
