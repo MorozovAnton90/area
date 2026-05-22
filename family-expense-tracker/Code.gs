@@ -1,58 +1,53 @@
 // ============================================================
-// Code.gs — главный файл. Обработка webhook от Telegram.
+// Code.gs — главный файл. Polling-режим (без webhook).
 // ============================================================
 // Как это работает:
-//   1. Telegram присылает POST-запрос на URL вашего Apps Script
-//   2. doPost() получает запрос и разбирает его
-//   3. Если это текст — парсим как расход
-//   4. Если это нажатие кнопки — обрабатываем callback
+//   1. Триггер каждую минуту вызывает pollUpdates()
+//   2. pollUpdates() запрашивает новые сообщения у Telegram
+//   3. Каждое сообщение обрабатывается: парсинг → запись в таблицу
+//   4. Нажатия кнопок тоже обрабатываются
 // ============================================================
 
 // !! ОБЯЗАТЕЛЬНО ЗАПОЛНИТЕ ЭТИ ЗНАЧЕНИЯ !!
-var BOT_TOKEN = "";        // Токен от BotFather, например: "1234567890:ABCdef..."
-var ALLOWED_CHAT_IDS = []; // ID чатов/пользователей, которым разрешён доступ
-                           // Например: [123456789, 987654321]
-                           // Оставьте пустым [] чтобы разрешить всем (не рекомендуется)
+var BOT_TOKEN = "";        // Токен от BotFather
+var ALLOWED_CHAT_IDS = []; // ID пользователей с доступом, например: [123456789, 987654321]
 
 // URL Telegram API
 var TG_API = "https://api.telegram.org/bot" + BOT_TOKEN;
 
 // ============================================================
-// Точка входа — вызывается при каждом запросе от Telegram
+// Главная функция — вызывается триггером каждую минуту
 // ============================================================
-function doPost(e) {
-  var chatId = null;
-  try {
-    var update = JSON.parse(e.postData.contents);
+function pollUpdates() {
+  var props = PropertiesService.getScriptProperties();
+  var lastUpdateId = Number(props.getProperty("lastUpdateId") || 0);
 
-    // Защита от дубликатов: каждый update_id обрабатываем только один раз
-    var updateId = String(update.update_id);
-    var cache = CacheService.getScriptCache();
-    if (cache.get(updateId)) {
-      return ContentService.createTextOutput("OK");
-    }
-    cache.put(updateId, "1", 86400); // помним 24 часа
+  var url = TG_API + "/getUpdates?offset=" + (lastUpdateId + 1) + "&limit=100&timeout=0";
+  var response = UrlFetchApp.fetch(url, { muteHttpExceptions: true });
+  var data = JSON.parse(response.getContentText());
 
-    if (update.message) chatId = update.message.chat.id;
-    processUpdate(update);
-  } catch (err) {
-    Logger.log("Ошибка doPost: " + err.toString());
-    if (chatId) {
-      try { sendMessage(chatId, "⚠️ Ошибка: " + err.toString()); } catch(e2) {}
+  if (!data.ok || data.result.length === 0) return;
+
+  for (var i = 0; i < data.result.length; i++) {
+    try {
+      processUpdate(data.result[i]);
+    } catch (err) {
+      Logger.log("Ошибка при обработке update: " + err.toString());
     }
+    lastUpdateId = data.result[i].update_id;
   }
-  return ContentService.createTextOutput("OK");
+
+  props.setProperty("lastUpdateId", String(lastUpdateId));
 }
 
-// Обработка входящего обновления от Telegram
+// ============================================================
+// Обработка одного обновления от Telegram
+// ============================================================
 function processUpdate(update) {
-  // Нажатие inline-кнопки
   if (update.callback_query) {
     handleCallbackQuery(update.callback_query);
     return;
   }
-
-  // Текстовое сообщение
   if (update.message && update.message.text) {
     handleMessage(update.message);
     return;
@@ -96,7 +91,7 @@ function handleMessage(message) {
     return;
   }
 
-  // Если не команда — пробуем распарсить как расход
+  // Парсим как расход
   var parsed = parseMessage(text);
 
   if (!parsed || !parsed.amount) {
@@ -121,7 +116,7 @@ function handleMessage(message) {
     return;
   }
 
-  // Всё хорошо — отвечаем с кнопками "Изменить категорию" и "Удалить"
+  // Отвечаем с кнопками
   sendSuccessMessage(chatId, recordId, parsed.amount, parsed.category, parsed.comment);
 }
 
@@ -134,21 +129,14 @@ function handleCallbackQuery(query) {
   var data = query.data;
   var queryId = query.id;
 
-  // Подтверждаем нажатие (убираем "часики" на кнопке)
   answerCallbackQuery(queryId);
-
-  // Формат callback_data:
-  //   "cat|RECORD_ID|CATEGORY"   — выбор категории
-  //   "change|RECORD_ID"         — изменить категорию
-  //   "delete|RECORD_ID"         — удалить запись
 
   var parts = data.split("|");
   var action = parts[0];
   var recordId = parts[1];
 
   if (action === "cat") {
-    // Пользователь выбрал категорию
-    var newCategory = parts.slice(2).join("|"); // Категория может содержать |
+    var newCategory = parts.slice(2).join("|");
     var success = updateCategory(recordId, newCategory);
     if (success) {
       editMessage(chatId, messageId, "✅ Категория обновлена: *" + newCategory + "*");
@@ -157,11 +145,9 @@ function handleCallbackQuery(query) {
     }
 
   } else if (action === "change") {
-    // Показываем кнопки выбора категории заново
     editMessageWithCategories(chatId, messageId, recordId);
 
   } else if (action === "delete") {
-    // Удаляем запись
     var deleted = deleteExpense(recordId);
     if (deleted) {
       editMessage(chatId, messageId, "🗑 Запись удалена.");
@@ -172,10 +158,9 @@ function handleCallbackQuery(query) {
 }
 
 // ============================================================
-// Отправка сообщений и управление клавиатурой
+// Сообщения и клавиатуры
 // ============================================================
 
-// Справка по боту
 function handleHelp(chatId) {
   var text = "👋 *Семейный трекер расходов*\n\n" +
     "Просто напишите сумму и комментарий:\n" +
@@ -190,7 +175,6 @@ function handleHelp(chatId) {
   sendMessage(chatId, text);
 }
 
-// Успешное сохранение с кнопками "Изменить категорию" и "Удалить"
 function sendSuccessMessage(chatId, recordId, amount, category, comment) {
   var text = "✅ Записал:\n" +
     "💰 *" + formatAmount(amount) + " ₽*\n" +
@@ -198,42 +182,31 @@ function sendSuccessMessage(chatId, recordId, amount, category, comment) {
     (comment ? "💬 " + escapeMd(comment) : "");
 
   var keyboard = {
-    inline_keyboard: [
-      [
-        { text: "✏️ Изменить категорию", callback_data: "change|" + recordId },
-        { text: "🗑 Удалить", callback_data: "delete|" + recordId }
-      ]
-    ]
+    inline_keyboard: [[
+      { text: "✏️ Изменить категорию", callback_data: "change|" + recordId },
+      { text: "🗑 Удалить", callback_data: "delete|" + recordId }
+    ]]
   };
-
   sendMessageWithKeyboard(chatId, text, keyboard);
 }
 
-// Предложить выбрать категорию (если не определена автоматически)
 function sendCategorySelector(chatId, recordId, amount, comment) {
   var text = "❓ Не определил категорию для:\n" +
     "💰 *" + formatAmount(amount) + " ₽*" +
     (comment ? " — " + escapeMd(comment) : "") +
     "\n\nВыберите категорию:";
-
-  var keyboard = buildCategoryKeyboard(recordId);
-  sendMessageWithKeyboard(chatId, text, keyboard);
+  sendMessageWithKeyboard(chatId, text, buildCategoryKeyboard(recordId));
 }
 
-// Редактировать сообщение, показав выбор категорий
 function editMessageWithCategories(chatId, messageId, recordId) {
-  var text = "Выберите новую категорию:";
-  var keyboard = buildCategoryKeyboard(recordId);
-  editMessageWithKeyboard(chatId, messageId, text, keyboard);
+  editMessageWithKeyboard(chatId, messageId, "Выберите новую категорию:", buildCategoryKeyboard(recordId));
 }
 
-// Построить клавиатуру с категориями (по 2 в ряду)
 function buildCategoryKeyboard(recordId) {
   var categories = getCategoryList();
   var rows = [];
   for (var i = 0; i < categories.length; i += 2) {
-    var row = [];
-    row.push({ text: categories[i], callback_data: "cat|" + recordId + "|" + categories[i] });
+    var row = [{ text: categories[i], callback_data: "cat|" + recordId + "|" + categories[i] }];
     if (i + 1 < categories.length) {
       row.push({ text: categories[i + 1], callback_data: "cat|" + recordId + "|" + categories[i + 1] });
     }
@@ -243,86 +216,65 @@ function buildCategoryKeyboard(recordId) {
 }
 
 // ============================================================
-// Низкоуровневые функции Telegram API
+// Telegram API
 // ============================================================
 
-// Экранировать спецсимволы Markdown в пользовательском тексте
 function escapeMd(text) {
   if (!text) return "";
   return String(text).replace(/[_*`\[]/g, function(c) { return "\\" + c; });
 }
 
-// Отправить простое текстовое сообщение
 function sendMessage(chatId, text) {
-  var url = TG_API + "/sendMessage";
-  // Обрезаем если слишком длинное (лимит Telegram 4096 символов)
-  var safeText = text.length > 4000 ? text.substring(0, 4000) + "\n\n_(сообщение обрезано)_" : text;
-  var payload = {
+  var safeText = text.length > 4000 ? text.substring(0, 4000) + "\n\n_(обрезано)_" : text;
+  callTelegramApi(TG_API + "/sendMessage", {
     chat_id: chatId,
     text: safeText,
     parse_mode: "Markdown"
-  };
-  callTelegramApi(url, payload);
+  });
 }
 
-// Отправить сообщение с inline-клавиатурой
 function sendMessageWithKeyboard(chatId, text, keyboard) {
-  var url = TG_API + "/sendMessage";
-  var payload = {
+  callTelegramApi(TG_API + "/sendMessage", {
     chat_id: chatId,
     text: text,
     parse_mode: "Markdown",
     reply_markup: JSON.stringify(keyboard)
-  };
-  callTelegramApi(url, payload);
+  });
 }
 
-// Отредактировать существующее сообщение (заменить текст)
 function editMessage(chatId, messageId, text) {
-  var url = TG_API + "/editMessageText";
-  var payload = {
+  callTelegramApi(TG_API + "/editMessageText", {
     chat_id: chatId,
     message_id: messageId,
     text: text,
     parse_mode: "Markdown"
-  };
-  callTelegramApi(url, payload);
+  });
 }
 
-// Отредактировать сообщение с новой клавиатурой
 function editMessageWithKeyboard(chatId, messageId, text, keyboard) {
-  var url = TG_API + "/editMessageText";
-  var payload = {
+  callTelegramApi(TG_API + "/editMessageText", {
     chat_id: chatId,
     message_id: messageId,
     text: text,
     parse_mode: "Markdown",
     reply_markup: JSON.stringify(keyboard)
-  };
-  callTelegramApi(url, payload);
+  });
 }
 
-// Подтвердить нажатие кнопки (убирает индикатор загрузки)
 function answerCallbackQuery(queryId) {
-  var url = TG_API + "/answerCallbackQuery";
-  var payload = { callback_query_id: queryId };
-  callTelegramApi(url, payload);
+  callTelegramApi(TG_API + "/answerCallbackQuery", { callback_query_id: queryId });
 }
 
-// Базовый вызов Telegram API через HTTP POST
 function callTelegramApi(url, payload) {
-  var options = {
-    method: "post",
-    contentType: "application/json",
-    payload: JSON.stringify(payload),
-    muteHttpExceptions: true
-  };
   try {
-    var response = UrlFetchApp.fetch(url, options);
+    var response = UrlFetchApp.fetch(url, {
+      method: "post",
+      contentType: "application/json",
+      payload: JSON.stringify(payload),
+      muteHttpExceptions: true
+    });
     var result = JSON.parse(response.getContentText());
-    if (!result.ok) {
-      Logger.log("Telegram API error: " + JSON.stringify(result));
-    }
+    if (!result.ok) Logger.log("Telegram API error: " + JSON.stringify(result));
     return result;
   } catch (err) {
     Logger.log("callTelegramApi error: " + err.toString());
@@ -331,18 +283,27 @@ function callTelegramApi(url, payload) {
 }
 
 // ============================================================
-// Настройка webhook — запустите эту функцию ОДИН РАЗ вручную
+// Настройка триггера — запустите ОДИН РАЗ вручную
 // ============================================================
-function setWebhook() {
-  var webhookUrl = "https://script.google.com/macros/s/AKfycbz6LdcO5jWeEKnpOS30LUBOT_bVzZyNpYS4ZzzMKGfDoNA0nhehBrMh8HsI_IkvMvmCfA/exec";
-  var url = TG_API + "/setWebhook?url=" + encodeURIComponent(webhookUrl);
-  var response = UrlFetchApp.fetch(url);
-  Logger.log(response.getContentText());
+function setupTrigger() {
+  // Удаляем старые триггеры если есть
+  var triggers = ScriptApp.getProjectTriggers();
+  for (var i = 0; i < triggers.length; i++) {
+    if (triggers[i].getHandlerFunction() === "pollUpdates") {
+      ScriptApp.deleteTrigger(triggers[i]);
+    }
+  }
+  // Создаём новый триггер — каждую минуту
+  ScriptApp.newTrigger("pollUpdates")
+    .timeBased()
+    .everyMinutes(1)
+    .create();
+  Logger.log("Триггер установлен: pollUpdates будет запускаться каждую минуту");
 }
 
-// Проверить текущий webhook
-function getWebhookInfo() {
-  var url = TG_API + "/getWebhookInfo";
-  var response = UrlFetchApp.fetch(url);
+// Тестовая функция — проверить что бот получает сообщения
+function testPoll() {
+  var url = TG_API + "/getUpdates?limit=5&timeout=0";
+  var response = UrlFetchApp.fetch(url, { muteHttpExceptions: true });
   Logger.log(response.getContentText());
 }
