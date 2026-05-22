@@ -146,7 +146,9 @@ function handleCallbackQuery(query) {
   var recordId = parts[1];
 
   if (action === "cat") {
-    var newCategory = parts.slice(2).join("|");
+    // parts[2] — индекс категории в списке getCategoryList()
+    var categoryIndex = Number(parts[2]);
+    var newCategory = getCategoryList()[categoryIndex] || "Непонятное";
     var success = updateCategory(recordId, newCategory);
     if (success) {
       editMessage(chatId, messageId, "✅ Категория обновлена: *" + newCategory + "*");
@@ -216,9 +218,11 @@ function buildCategoryKeyboard(recordId) {
   var categories = getCategoryList();
   var rows = [];
   for (var i = 0; i < categories.length; i += 2) {
-    var row = [{ text: categories[i], callback_data: "cat|" + recordId + "|" + categories[i] }];
+    // Используем индекс категории вместо названия — иначе длинные названия
+    // превысят лимит Telegram в 64 байта для callback_data
+    var row = [{ text: categories[i], callback_data: "cat|" + recordId + "|" + i }];
     if (i + 1 < categories.length) {
-      row.push({ text: categories[i + 1], callback_data: "cat|" + recordId + "|" + categories[i + 1] });
+      row.push({ text: categories[i + 1], callback_data: "cat|" + recordId + "|" + (i + 1) });
     }
     rows.push(row);
   }
