@@ -302,7 +302,7 @@ body {
    ================================================================ */
 .legend {
   display: grid; grid-template-columns: 1fr 1fr;
-  gap: 6px 12px; margin-top: 14px;
+  gap: 7px 12px; margin-top: 14px;
 }
 .legend-item {
   display: flex; align-items: center; gap: 7px;
@@ -314,8 +314,8 @@ body {
 .legend-name {
   flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
-.legend-pct { font-weight: 800; color: var(--text); font-size: 12px; }
-.legend-amt { font-size: 11px; color: var(--muted); margin-left: 2px; }
+.legend-pct { font-weight: 800; color: var(--text); font-size: 12px; flex-shrink: 0; }
+.legend-amt { font-size: 11px; color: var(--muted); flex-shrink: 0; }
 
 /* ================================================================
    TOP LIST
@@ -788,7 +788,8 @@ function buildDonut() {
     div.innerHTML = `
       <div class="legend-dot" style="background:${CAT_COLORS[cat]||'#B0B8C4'}"></div>
       <span class="legend-name">${cat}</span>
-      <span class="legend-pct">${pct}%</span>`;
+      <span class="legend-pct">${pct}%</span>
+      <span class="legend-amt">${fmt(amt)}</span>`;
     leg.appendChild(div);
   });
 }
