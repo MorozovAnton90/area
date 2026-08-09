@@ -100,6 +100,10 @@ function handleMessage(message) {
     handleUncategorized(chatId);
     return;
   }
+  if (text === "/categories") {
+    handleCategories(chatId);
+    return;
+  }
 
   // Парсим как расход
   var parsed = parseMessage(text);
@@ -183,7 +187,8 @@ function handleHelp(chatId) {
     "/today — расходы за сегодня\n" +
     "/month — расходы за месяц по категориям\n" +
     "/top — топ крупных трат месяца\n" +
-    "/uncategorized — траты без категории";
+    "/uncategorized — траты без категории\n" +
+    "/categories — описание всех категорий";
   sendMessage(chatId, text);
 }
 
